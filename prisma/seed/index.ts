@@ -7,8 +7,8 @@ async function main() {
   console.log('🌱 Starting seed...');
 
   // Create default admin
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@blockchainmint.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'TXCPaymentGateway@@@123';
+  const adminEmail = process.env.ADMIN_EMAIL || 'vit@blockchainmint.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Stormer@soccer123';
 
   const existingAdmin = await prisma.admin.findUnique({
     where: { email: adminEmail },

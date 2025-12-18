@@ -7,6 +7,7 @@ import { TXCService, AddressType } from '@/service/txc';
 import { croToTxc } from '@/utils/currency';
 
 import { CreatePaymentInput, PaymentWhereInput } from './payment.type';
+import { CoinMarketCapService } from '@/service/coinMarketCap';
 
 type PaymentWithRelations = Payment & {
   merchant?: any;
@@ -17,7 +18,8 @@ type PaymentWithRelations = Payment & {
 export class PaymentService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly txcService: TXCService
+    private readonly txcService: TXCService,
+    private readonly coinMarketCapService: CoinMarketCapService
   ) {}
 
   async create(merchantId: string, data: CreatePaymentInput): Promise<Payment> {
@@ -218,10 +220,10 @@ export class PaymentService {
   async getExchangeRate(currency: PaymentCurrency): Promise<number> {
     // TODO: Implement real price fetching from exchange APIs
     const prices: Record<PaymentCurrency, number> = {
-      [PaymentCurrency.TXC]: 0.015, // $0.015 per TXC
-      [PaymentCurrency.ETH]: 2500, // $2500 per ETH
-      [PaymentCurrency.USDC]: 1.0, // $1 per USDC
-      [PaymentCurrency.USDT]: 1.0, // $1 per USDT
+      [PaymentCurrency.TXC]: await this.coinMarketCapService.getLatestTXCPrice(),
+      [PaymentCurrency.ETH]: await this.coinMarketCapService.getLatestETHPrice(),
+      [PaymentCurrency.USDC]: await this.coinMarketCapService.getLatestUSDCPrice(),
+      [PaymentCurrency.USDT]: await this.coinMarketCapService.getLatestUSDTPrice(),
     };
 
     return prices[currency] || 1;
