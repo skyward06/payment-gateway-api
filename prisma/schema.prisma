@@ -1,0 +1,261 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters", "relationJoins", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
+}
+
+// ===============================
+// Crypto Payment Gateway
+// ===============================
+
+enum UserRole {
+  ADMIN
+  MERCHANT
+}
+
+enum PaymentStatus {
+  PENDING // Payment created, waiting for transaction
+  DETECTED // Transaction detected but unconfirmed
+  CONFIRMING // Transaction confirming (1+ confirmations)
+  UNDERPAID // Paid but amount is less than required
+  OVERPAID // Paid more than required
+  COMPLETED // Fully paid and confirmed
+  EXPIRED // Payment window expired
+  REFUNDED // Payment was refunded
+  CANCELLED // Cancelled by merchant or user
+}
+
+enum PaymentNetwork {
+  TXC // TXC mainnet
+  ETH // Ethereum mainnet
+  BASE // Base L2
+  BSC // Binance Smart Chain
+  POLYGON // Polygon
+}
+
+enum PaymentCurrency {
+  TXC // Native TXC
+  ETH // Native ETH
+  USDC // USDC stablecoin
+  USDT // USDT stablecoin
+}
+
+// Admin - system administrators
+model Admin {
+  id       String   @id @default(uuid())
+  email    String   @unique
+  password String
+  name     String?
+  role     UserRole @default(ADMIN)
+  isActive Boolean  @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("admins")
+}
+
+// Merchant - represents a business using the payment gateway
+model Merchant {
+  id          String  @id @default(uuid())
+  name        String
+  email       String  @unique
+  password    String // Hashed password for merchant dashboard access
+  website     String?
+  logoUrl     String?
+  description String?
+
+  // Webhook configuration
+  webhookUrl    String?
+  webhookSecret String?
+
+  // Settings
+  defaultExpirationMinutes Int     @default(30)
+  autoConfirmations        Int     @default(1) // Required confirmations for auto-complete
+  allowPartialPayments     Boolean @default(false)
+  collectCustomerEmail     Boolean @default(false)
+
+  // Status
+  isActive   Boolean   @default(true)
+  verifiedAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  apiKeys           ApiKey[]
+  payments          Payment[]
+  supportedNetworks MerchantNetwork[]
+  webhookLogs       WebhookLog[]
+
+  @@map("merchants")
+}
+
+// ApiKey - API keys for merchant authentication
+model ApiKey {
+  id          String  @id @default(uuid())
+  name        String // e.g., "Production", "Test"
+  publicKey   String  @unique // Used in API requests (pk_live_xxx or pk_test_xxx)
+  secretHash  String // Hashed secret for verification
+  description String?
+
+  // Permissions & restrictions
+  permissions String[] @default(["payments:read", "payments:create"])
+  allowedIPs  String[] @default([])
+  rateLimit   Int      @default(100) // requests per minute
+
+  // Status
+  isActive   Boolean   @default(true)
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([publicKey])
+  @@map("api_keys")
+}
+
+// MerchantNetwork - which networks/currencies a merchant accepts
+model MerchantNetwork {
+  id String @id @default(uuid())
+
+  network  PaymentNetwork
+  currency PaymentCurrency
+  isActive Boolean         @default(true)
+
+  // Receiving wallet address for this network/currency combo
+  walletAddress String
+
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([merchantId, network, currency])
+  @@map("merchant_networks")
+}
+
+// Payment - individual payment request
+model Payment {
+  id         String  @id @default(uuid())
+  externalId String? // Merchant's order/invoice ID
+
+  // Amount details (stored in smallest unit: cros for TXC, wei for ETH, cents for fiat)
+  amountRequested BigInt // Amount in smallest crypto unit (e.g., cros)
+  amountPaid      BigInt  @default(0) // Actual amount received in smallest unit
+  fiatAmount      BigInt? // Original fiat amount in cents (e.g., $10.50 = 1050)
+  fiatCurrency    String? @default("USD") // Original fiat currency
+  exchangeRate    BigInt? // Rate multiplied by 10^8 for precision
+
+  // Payment details
+  network                  PaymentNetwork
+  currency                 PaymentCurrency
+  paymentAddress           String // Unique address for this payment
+  paymentAddressPrivateKey String? // Private key for collecting funds (encrypted in production)
+  status                   PaymentStatus   @default(PENDING)
+
+  // Confirmation tracking
+  requiredConfirmations Int @default(1)
+  currentConfirmations  Int @default(0)
+
+  // Timing
+  expiresAt   DateTime
+  detectedAt  DateTime? // When first tx was detected
+  confirmedAt DateTime? // When required confirmations reached
+  completedAt DateTime?
+
+  // Customer info (optional)
+  customerEmail String?
+  customerName  String?
+  metadata      Json? // Additional merchant-provided data
+
+  // Redirect URLs
+  successUrl String?
+  cancelUrl  String?
+
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  transactions PaymentTransaction[]
+  webhookLogs  WebhookLog[]
+
+  @@index([externalId])
+  @@index([paymentAddress])
+  @@index([status])
+  @@index([merchantId, status])
+  @@index([expiresAt])
+  @@map("payments")
+}
+
+// PaymentTransaction - blockchain transactions for a payment
+model PaymentTransaction {
+  id String @id @default(uuid())
+
+  txHash        String // Blockchain transaction hash
+  network       PaymentNetwork
+  fromAddress   String?
+  toAddress     String
+  amount        BigInt // Amount in smallest unit (cros/wei)
+  confirmations Int            @default(0)
+  blockNumber   BigInt?
+  blockHash     String?
+
+  // Status
+  isConfirmed Boolean   @default(false)
+  confirmedAt DateTime?
+
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([txHash, network])
+  @@index([paymentId])
+  @@index([txHash])
+  @@map("payment_transactions")
+}
+
+// WebhookLog - track webhook delivery attempts
+model WebhookLog {
+  id String @id @default(uuid())
+
+  event       String // e.g., "payment.completed", "payment.detected"
+  payload     Json
+  url         String
+  httpStatus  Int?
+  response    String?
+  attempts    Int       @default(1)
+  isDelivered Boolean   @default(false)
+  nextRetryAt DateTime?
+
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  paymentId  String?
+  payment    Payment? @relation(fields: [paymentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([merchantId, isDelivered])
+  @@index([nextRetryAt])
+  @@map("webhook_logs")
+}
