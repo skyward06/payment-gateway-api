@@ -1,0 +1,1 @@
+export { MerchantSettingsView } from './MerchantSettingsView';

@@ -1,0 +1,1 @@
+export { MerchantRegisterView } from './MerchantRegisterView';

@@ -1,0 +1,50 @@
+import { m } from 'framer-motion';
+
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
+
+import { SimpleLayout } from 'src/layouts/simple';
+import { ForbiddenIllustration } from 'src/assets/illustrations';
+
+import { varBounce, MotionContainer } from 'src/components/animate';
+
+// ----------------------------------------------------------------------
+
+export function View403() {
+  return (
+    <SimpleLayout>
+      <Container component={MotionContainer}>
+        <m.div variants={varBounce('in')}>
+          <Typography variant="h3" sx={{ mb: 2 }}>
+            No permission
+          </Typography>
+        </m.div>
+
+        <m.div variants={varBounce('in')}>
+          <Typography sx={{ color: 'text.secondary' }}>
+            The page you&apos;re trying to access has restricted access. Please refer to your system
+            administrator.
+          </Typography>
+        </m.div>
+
+        <m.div variants={varBounce('in')}>
+          <ForbiddenIllustration sx={{ my: { xs: 5, sm: 10 } }} />
+        </m.div>
+
+        <Button
+          component={RouterLink}
+          href={paths.auth.merchantLogin}
+          size="large"
+          variant="contained"
+          color="primary"
+        >
+          Go to home
+        </Button>
+      </Container>
+    </SimpleLayout>
+  );
+}
