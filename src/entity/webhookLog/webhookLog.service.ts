@@ -1,4 +1,4 @@
-import { Prisma, WebhookLog } from '@prisma/client';
+import { Prisma, WebhookLog } from '@/generated/prisma/client';
 import axios from 'axios';
 import crypto from 'crypto';
 import { Service } from 'typedi';

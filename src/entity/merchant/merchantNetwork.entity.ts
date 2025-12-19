@@ -1,4 +1,4 @@
-import { PaymentCurrency, PaymentNetwork } from '@prisma/client';
+import { PaymentCurrency, PaymentNetwork } from '@/generated/prisma/client';
 import { Field, ID, ObjectType } from 'type-graphql';
 
 @ObjectType()

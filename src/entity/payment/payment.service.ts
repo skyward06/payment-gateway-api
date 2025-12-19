@@ -1,13 +1,13 @@
-import { Payment, PaymentCurrency, PaymentNetwork, PaymentStatus, Prisma } from '@prisma/client';
+import { Payment, PaymentCurrency, PaymentNetwork, PaymentStatus } from '@/generated/prisma/client';
 import { Service } from 'typedi';
 
 import { CHAIN_CONFIG } from '@/consts';
 import { PrismaService } from '@/service/prisma';
-import { TXCService, AddressType } from '@/service/txc';
-import { croToTxc, fiatToCrypto, rateToStoredRate, CurrencyCode } from '@/utils/currency';
+import { AddressType, TXCService } from '@/service/txc';
+import { croToTxc, CurrencyCode, fiatToCrypto, rateToStoredRate } from '@/utils/currency';
 
-import { CreatePaymentInput, PaymentWhereInput } from './payment.type';
 import { CoinMarketCapService } from '@/service/coinMarketCap';
+import { CreatePaymentInput, PaymentWhereInput } from './payment.type';
 
 type PaymentWithRelations = Payment & {
   merchant?: any;

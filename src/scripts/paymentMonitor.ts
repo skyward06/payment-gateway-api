@@ -7,19 +7,18 @@
  * Run with: npx ts-node src/scripts/paymentMonitor.ts
  */
 
+import 'dotenv/config';
 import 'reflect-metadata';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
-import { PaymentStatus, PaymentNetwork } from '@prisma/client';
+import { PaymentNetwork, PaymentStatus } from '@/generated/prisma/client';
 import Container from 'typedi';
 
 import { CHAIN_CONFIG } from '@/consts';
+import { PaymentTransactionService } from '@/entity/paymentTransaction/paymentTransaction.service';
+import { WebhookService } from '@/entity/webhookLog/webhookLog.service';
+import { MempoolService } from '@/service/mempool';
 import { PrismaService } from '@/service/prisma';
 import { TXCService } from '@/service/txc';
-import { MempoolService } from '@/service/mempool';
-import { WebhookService } from '@/entity/webhookLog/webhookLog.service';
-import { PaymentTransactionService } from '@/entity/paymentTransaction/paymentTransaction.service';
 import { croToTxc } from '@/utils/currency';
 
 const POLL_INTERVAL = 10000; // 10 seconds

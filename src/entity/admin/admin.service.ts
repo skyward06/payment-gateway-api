@@ -1,4 +1,4 @@
-import { Admin, UserRole } from '@prisma/client';
+import { Admin, UserRole } from '@/generated/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Service } from 'typedi';

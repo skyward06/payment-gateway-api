@@ -47,6 +47,7 @@ jspm_packages/
 
 # Prisma files
 prisma/.env
+src/generated/prisma/
 .env
 
 # Environment variables

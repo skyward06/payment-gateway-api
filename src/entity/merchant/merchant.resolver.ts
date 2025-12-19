@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/generated/prisma/client';
 import { GraphQLError } from 'graphql';
 import {
   Arg,
@@ -19,17 +19,17 @@ import { Context } from '@/context';
 import { IDInput } from '@/graphql/common.type';
 
 import { Merchant } from './merchant.entity';
-import { MerchantNetwork } from './merchantNetwork.entity';
 import { MerchantService } from './merchant.service';
 import {
   AddMerchantNetworkInput,
   AdminUpdateMerchantInput,
   CreateMerchantInput,
-  MerchantQueryArgs,
   MerchantLoginInput,
+  MerchantQueryArgs,
   UpdateMerchantInput,
   UpdateMerchantNetworkInput,
 } from './merchant.type';
+import { MerchantNetwork } from './merchantNetwork.entity';
 
 @ObjectType()
 class MerchantLoginResponse {

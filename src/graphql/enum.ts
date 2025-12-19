@@ -1,4 +1,9 @@
-import { PaymentCurrency, PaymentNetwork, PaymentStatus, UserRole } from '@prisma/client';
+import {
+  PaymentCurrency,
+  PaymentNetwork,
+  PaymentStatus,
+  UserRole,
+} from '@/generated/prisma/client';
 import { registerEnumType } from 'type-graphql';
 
 // Register Prisma enums

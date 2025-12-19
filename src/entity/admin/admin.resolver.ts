@@ -2,7 +2,7 @@ import { GraphQLError } from 'graphql';
 import { Arg, Args, Authorized, Field, Mutation, ObjectType, Query, Resolver } from 'type-graphql';
 import { Service } from 'typedi';
 
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/generated/prisma/client';
 
 import { IDInput } from '@/graphql/common.type';
 

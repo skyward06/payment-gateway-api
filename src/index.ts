@@ -1,7 +1,5 @@
+import 'dotenv/config';
 import 'reflect-metadata';
-
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -18,14 +16,15 @@ import { Context, context } from './context';
 
 // Import resolvers
 import { AdminResolver } from './entity/admin/admin.resolver';
-import { MerchantResolver } from './entity/merchant/merchant.resolver';
 import { ApiKeyResolver } from './entity/apiKey/apiKey.resolver';
+import { MerchantResolver } from './entity/merchant/merchant.resolver';
 import { PaymentResolver } from './entity/payment/payment.resolver';
 
 // Import enum registrations
 import './graphql/enum';
 
-const PORT = process.env.APP_PORT || 4000;
+const APP_PORT = process.env.APP_PORT || 4000;
+const APP_HOST = process.env.APP_HOST || '127.0.0.1';
 
 async function bootstrap() {
   const app = express();
@@ -76,9 +75,9 @@ async function bootstrap() {
   );
 
   // Start server
-  httpServer.listen(+PORT, '127.0.0.1', () => {
-    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-    console.log(`📊 Health check at http://localhost:${PORT}/health`);
+  httpServer.listen(+APP_PORT, APP_HOST, () => {
+    console.log(`🚀 Server ready at http://${APP_HOST}:${APP_PORT}/graphql`);
+    console.log(`📊 Health check at http://${APP_HOST}:${APP_PORT}/health`);
   });
 }
 

@@ -1,8 +1,8 @@
-import { PaymentCurrency, PaymentNetwork, PaymentStatus } from '@prisma/client';
+import { PaymentCurrency, PaymentNetwork, PaymentStatus } from '@/generated/prisma/client';
 import { IsEmail, IsUrl } from 'class-validator';
-import { ArgsType, Field, InputType, Int } from 'type-graphql';
-import GraphQLJSON from 'graphql-type-json';
 import { GraphQLBigInt } from 'graphql-scalars';
+import GraphQLJSON from 'graphql-type-json';
+import { ArgsType, Field, InputType, Int } from 'type-graphql';
 
 /**
  * SMALLEST UNIT CONVENTION:

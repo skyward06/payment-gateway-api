@@ -1,4 +1,4 @@
-import { Merchant, MerchantNetwork, UserRole } from '@prisma/client';
+import { Merchant, MerchantNetwork, UserRole } from '@/generated/prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';

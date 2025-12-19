@@ -1,4 +1,4 @@
-import { ApiKey } from '@prisma/client';
+import { ApiKey } from '@/generated/prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Service } from 'typedi';

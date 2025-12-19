@@ -2,7 +2,7 @@ const getEnvConfig = () => {
   const env = process.env.NODE_ENV || 'development';
 
   const baseConfig = {
-    name: 'minetxc-api',
+    name: 'payment-gateway-api',
     script: 'dist/src/index.js',
     exec_mode: 'cluster',
     instance_var: 'INSTANCE_ID',
@@ -21,7 +21,7 @@ const getEnvConfig = () => {
   const envConfigs = {
     development: {
       ...baseConfig,
-      name: 'minetxc-api-dev',
+      name: 'payment-gateway-api-dev',
       script: 'ts-node',
       args: '-r tsconfig-paths/register src/index.ts',
       instances: 1,
@@ -39,7 +39,7 @@ const getEnvConfig = () => {
 
     staging: {
       ...baseConfig,
-      name: 'minetxc-api-staging',
+      name: 'payment-gateway-api-staging',
       instances: 1,
       watch: false,
       max_memory_restart: '1G',
@@ -59,7 +59,7 @@ const getEnvConfig = () => {
 
     production: {
       ...baseConfig,
-      name: 'minetxc-api',
+      name: 'payment-gateway-api',
       instances: 4,
       watch: false,
       max_memory_restart: '4G',

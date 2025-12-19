@@ -1,4 +1,4 @@
-import { Admin, Merchant, PrismaClient, UserRole } from '@prisma/client';
+import { Admin, Merchant, PrismaClient, UserRole } from '@/generated/prisma/client';
 import type { Request } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import Container from 'typedi';

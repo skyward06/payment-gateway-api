@@ -1,4 +1,4 @@
-import { PaymentCurrency, UserRole } from '@prisma/client';
+import { PaymentCurrency, UserRole } from '@/generated/prisma/client';
 import { GraphQLError } from 'graphql';
 import {
   Arg,
@@ -24,10 +24,10 @@ import { MerchantService } from '../merchant/merchant.service';
 import { PaymentTransaction } from '../paymentTransaction/paymentTransaction.entity';
 import { PaymentTransactionService } from '../paymentTransaction/paymentTransaction.service';
 
-import { Payment, PaymentMethodInfo, TokenPriceInfo, AllExchangeRates } from './payment.entity';
+import { CoinMarketCapService } from '@/service/coinMarketCap';
+import { AllExchangeRates, Payment, PaymentMethodInfo, TokenPriceInfo } from './payment.entity';
 import { PaymentService } from './payment.service';
 import { CreatePaymentInput, PaymentQueryArgs } from './payment.type';
-import { CoinMarketCapService } from '@/service/coinMarketCap';
 
 @ObjectType()
 class PaymentListResponse {

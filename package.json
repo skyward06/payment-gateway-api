@@ -1,11 +1,10 @@
 {
-  "name": "payout-v2-backend",
+  "name": "payment-gateway-v1-backend",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "seed": "prisma db seed",
     "prisma:studio": "prisma studio -n 0.0.0.0",
-    "sync-blocks": "ts-node -r tsconfig-paths/register src/scripts/syncBlocks.ts",
     "dev": "ts-node-dev --no-notify -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
     "start": "node dist/src/index.js",
     "build": "tsc && tsc-alias",
@@ -42,8 +41,7 @@
     "@elastic/elasticsearch": "^8.15.0",
     "@graphql-yoga/subscription": "^5.0.1",
     "@paralleldrive/cuid2": "^3.0.4",
-    "@prisma/adapter-pg": "^6.13.0",
-    "@prisma/client": "^6.11.1",
+    "@prisma/adapter-pg": "^7.2.0",
     "@sanity/client": "^7.13.1",
     "@types/tiny-secp256k1": "^2.0.0",
     "amqplib": "^0.10.8",
@@ -92,6 +90,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@prisma/client": "^7.2.0",
     "@types/amqplib": "^0.10.7",
     "@types/bcryptjs": "^2.4.6",
     "@types/bluebird": "^3.5.42",
@@ -120,16 +119,13 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.5",
     "prettier": "^3.2.5",
-    "prisma": "^6.11.1",
-    "prisma-json-types-generator": "^3.5.1",
+    "prisma": "^7.2.0",
+    "prisma-json-types-generator": "^4.0.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.5"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -1,4 +1,4 @@
-import { PaymentNetwork } from '@prisma/client';
+import { PaymentNetwork } from '@/generated/prisma/client';
 import { GraphQLBigInt } from 'graphql-scalars';
 import { Field, ID, Int, ObjectType } from 'type-graphql';
 

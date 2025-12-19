@@ -1,8 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
+import { PaymentNetwork } from '@/generated/prisma/client';
 import path from 'path';
-import { PaymentNetwork } from '@prisma/client';
 
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV?.toLowerCase() ?? 'development',

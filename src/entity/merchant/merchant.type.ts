@@ -1,4 +1,4 @@
-import { PaymentCurrency, PaymentNetwork } from '@prisma/client';
+import { PaymentCurrency, PaymentNetwork } from '@/generated/prisma/client';
 import { IsEmail, IsUrl, MinLength } from 'class-validator';
 import { ArgsType, Field, InputType, Int } from 'type-graphql';
 

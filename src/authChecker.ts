@@ -1,5 +1,5 @@
+import { UserRole } from '@/generated/prisma/client';
 import { type AuthChecker } from 'type-graphql';
-import { UserRole } from '@prisma/client';
 
 import { type Context } from './context';
 
