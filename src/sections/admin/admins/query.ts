@@ -20,9 +20,14 @@ export const CREATE_ADMIN = gql(/* GraphQL */ `
   mutation CreateAdmin($data: CreateAdminInput!) {
     createAdmin(data: $data) {
       id
-      email
-      name
-      role
+    }
+  }
+`);
+
+export const UPDATE_ADMIN = gql(/* GraphQL */ `
+  mutation UpdateAdmin($data: UpdateAdminInput!) {
+    updateAdmin(data: $data) {
+      id
     }
   }
 `);

@@ -40,8 +40,10 @@ type Documents = {
     "\n  query GetPaymentMethods($apiKey: String) {\n    paymentMethods(apiKey: $apiKey) {\n      network\n      currencies\n      enabled\n    }\n  }\n": typeof types.GetPaymentMethodsDocument,
     "\n  query GetTokenPrice($currency: PaymentCurrency!) {\n    tokenPrice(currency: $currency) {\n      currency\n      priceUSD\n      updatedAt\n    }\n  }\n": typeof types.GetTokenPriceDocument,
     "\n  query GetAllExchangeRates {\n    allExchangeRates {\n      rates {\n        currency\n        priceUSD\n      }\n      updatedAt\n    }\n  }\n": typeof types.GetAllExchangeRatesDocument,
+    "\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n": typeof types.AdminDocument,
     "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": typeof types.GetAdminsDocument,
-    "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n      email\n      name\n      role\n    }\n  }\n": typeof types.CreateAdminDocument,
+    "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.CreateAdminDocument,
+    "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.UpdateAdminDocument,
 };
 const documents: Documents = {
     "\n  mutation AdminLogin($data: AdminLoginInput!) {\n    adminLogin(data: $data) {\n      admin {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      token\n    }\n  }\n": types.AdminLoginDocument,
@@ -70,8 +72,10 @@ const documents: Documents = {
     "\n  query GetPaymentMethods($apiKey: String) {\n    paymentMethods(apiKey: $apiKey) {\n      network\n      currencies\n      enabled\n    }\n  }\n": types.GetPaymentMethodsDocument,
     "\n  query GetTokenPrice($currency: PaymentCurrency!) {\n    tokenPrice(currency: $currency) {\n      currency\n      priceUSD\n      updatedAt\n    }\n  }\n": types.GetTokenPriceDocument,
     "\n  query GetAllExchangeRates {\n    allExchangeRates {\n      rates {\n        currency\n        priceUSD\n      }\n      updatedAt\n    }\n  }\n": types.GetAllExchangeRatesDocument,
+    "\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n": types.AdminDocument,
     "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": types.GetAdminsDocument,
-    "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n      email\n      name\n      role\n    }\n  }\n": types.CreateAdminDocument,
+    "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n": types.CreateAdminDocument,
+    "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n": types.UpdateAdminDocument,
 };
 
 /**
@@ -195,11 +199,19 @@ export function gql(source: "\n  query GetAllExchangeRates {\n    allExchangeRat
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"): (typeof documents)["\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n      email\n      name\n      role\n    }\n  }\n"): (typeof documents)["\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n      email\n      name\n      role\n    }\n  }\n"];
+export function gql(source: "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};
