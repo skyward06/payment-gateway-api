@@ -4,7 +4,7 @@ import { Service } from 'typedi';
 import { CHAIN_CONFIG } from '@/consts';
 import { PrismaService } from '@/service/prisma';
 import { TXCService, AddressType } from '@/service/txc';
-import { croToTxc } from '@/utils/currency';
+import { croToTxc, fiatToCrypto, rateToStoredRate, CurrencyCode } from '@/utils/currency';
 
 import { CreatePaymentInput, PaymentWhereInput } from './payment.type';
 import { CoinMarketCapService } from '@/service/coinMarketCap';
@@ -45,19 +45,34 @@ export class PaymentService {
     // Generate payment address with private key
     const { address, privateKey } = await this.generatePaymentAddress(data.network, data.currency);
 
-    // Amount is expected in smallest unit (cros for TXC)
-    // If fiat amount provided, convert using exchange rate
+    /**
+     * SMALLEST UNIT CONVENTION:
+     * - data.amount is expected in SMALLEST UNITS:
+     *   - If fiatCurrency is set: amount is in cents (e.g., $10.50 = 1050 cents)
+     *   - If no fiatCurrency: amount is in crypto smallest units (e.g., cros for TXC)
+     * - amountRequested is stored in crypto smallest units (cros, wei, etc.)
+     * - fiatAmount is stored in fiat smallest units (cents)
+     * - exchangeRate is stored as rate * 10^8 (big unit rate with precision)
+     */
     let amountRequested = BigInt(data.amount);
     let exchangeRate: bigint | null = null;
     let fiatAmount: bigint | null = null;
 
     if (data.fiatCurrency && data.fiatCurrency !== data.currency) {
-      // Rate is stored as rate * 10^8 for precision
-      const rate = await this.getExchangeRate(data.currency);
-      exchangeRate = BigInt(Math.round(rate * 1e8));
-      fiatAmount = amountRequested; // fiatAmount in cents
-      // Convert: amountRequested = fiatAmount * 10^8 / exchangeRate
-      amountRequested = (fiatAmount * BigInt(1e8)) / exchangeRate;
+      // Get exchange rate in big units (e.g., 2.88 USD per TXC)
+      const rateInBigUnits = await this.getExchangeRate(data.currency);
+      // Store rate with precision (rate * 10^8)
+      exchangeRate = rateToStoredRate(rateInBigUnits);
+      // Input amount is fiat in smallest units (cents)
+      fiatAmount = amountRequested;
+      // Convert fiat smallest unit (cents) to crypto smallest unit (cros)
+      // Using: cryptoSmallest = (fiatSmallest * cryptoMultiplier * RATE_MULT) / (fiatMultiplier * storedRate)
+      amountRequested = fiatToCrypto(
+        fiatAmount,
+        exchangeRate,
+        data.fiatCurrency as CurrencyCode,
+        data.currency as CurrencyCode
+      );
     }
 
     // Calculate expiration based on chain config or merchant override

@@ -1,15 +1,33 @@
 import { PaymentCurrency, PaymentNetwork, PaymentStatus } from '@prisma/client';
 import { IsEmail, IsUrl } from 'class-validator';
-import { ArgsType, Field, Float, InputType, Int } from 'type-graphql';
+import { ArgsType, Field, InputType, Int } from 'type-graphql';
 import GraphQLJSON from 'graphql-type-json';
+import { GraphQLBigInt } from 'graphql-scalars';
+
+/**
+ * SMALLEST UNIT CONVENTION:
+ *
+ * All monetary amounts in this API use SMALLEST UNITS:
+ * - USD: cents (1 dollar = 100 cents)
+ * - TXC: cros (1 TXC = 100,000,000 cros)
+ * - ETH: wei (1 ETH = 10^18 wei)
+ * - USDC/USDT: micro (1 USDC = 1,000,000 micro)
+ *
+ * Exchange rates are in BIG UNITS (e.g., 2.88 USD per 1 TXC)
+ */
 
 @InputType()
 export class CreatePaymentInput {
   @Field({ nullable: true })
   externalId?: string;
 
-  @Field(() => Float)
-  amount!: number; // Amount in fiat or crypto depending on context
+  /**
+   * Amount in SMALLEST UNITS:
+   * - If fiatCurrency is set: amount in cents (e.g., $10.50 = 1050)
+   * - If no fiatCurrency: amount in crypto smallest unit (e.g., cros for TXC)
+   */
+  @Field(() => GraphQLBigInt)
+  amount!: bigint;
 
   @Field({ nullable: true, defaultValue: 'USD' })
   fiatCurrency?: string;

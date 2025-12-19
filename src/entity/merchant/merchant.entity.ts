@@ -30,6 +30,7 @@ export class Merchant extends BaseEntity {
   @Field({ nullable: true })
   webhookUrl?: string;
 
+  @Field({ nullable: true, description: 'Only visible to authenticated merchant or admin' })
   webhookSecret?: string;
 
   @Field()

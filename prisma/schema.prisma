@@ -13,6 +13,16 @@ datasource db {
 // Crypto Payment Gateway
 // ===============================
 
+// SMALLEST UNIT CONVENTION:
+// All monetary amounts are stored in SMALLEST UNITS:
+// - USD: cents (1 dollar = 100 cents)
+// - TXC: cros (1 TXC = 100,000,000 cros)
+// - ETH: wei (1 ETH = 10^18 wei)
+// - USDC/USDT: micro (1 token = 1,000,000 micro)
+//
+// Exchange rates are stored with 10^8 precision:
+// - exchangeRate = price_in_fiat * 10^8 (e.g., $2.88/TXC = 288000000)
+
 enum UserRole {
   ADMIN
   MERCHANT
@@ -149,16 +159,17 @@ model MerchantNetwork {
 }
 
 // Payment - individual payment request
+// All amounts use SMALLEST UNITS (see convention at top of file)
 model Payment {
   id         String  @id @default(uuid())
   externalId String? // Merchant's order/invoice ID
 
-  // Amount details (stored in smallest unit: cros for TXC, wei for ETH, cents for fiat)
-  amountRequested BigInt // Amount in smallest crypto unit (e.g., cros)
-  amountPaid      BigInt  @default(0) // Actual amount received in smallest unit
-  fiatAmount      BigInt? // Original fiat amount in cents (e.g., $10.50 = 1050)
-  fiatCurrency    String? @default("USD") // Original fiat currency
-  exchangeRate    BigInt? // Rate multiplied by 10^8 for precision
+  // Amount details - ALL IN SMALLEST UNITS
+  amountRequested BigInt // Crypto amount in smallest unit (cros for TXC, wei for ETH)
+  amountPaid      BigInt  @default(0) // Actual crypto received in smallest unit
+  fiatAmount      BigInt? // Fiat amount in cents (e.g., $10.50 = 1050 cents)
+  fiatCurrency    String? @default("USD") // Fiat currency code
+  exchangeRate    BigInt? // Rate in big units * 10^8 (e.g., $2.88/TXC = 288000000)
 
   // Payment details
   network                  PaymentNetwork

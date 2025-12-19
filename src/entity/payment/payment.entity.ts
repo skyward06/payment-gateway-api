@@ -105,3 +105,21 @@ export class TokenPriceInfo {
   @Field()
   updatedAt!: Date;
 }
+
+@ObjectType()
+export class ExchangeRateInfo {
+  @Field()
+  currency!: string;
+
+  @Field(() => Float)
+  priceUSD!: number;
+}
+
+@ObjectType()
+export class AllExchangeRates {
+  @Field(() => [ExchangeRateInfo])
+  rates!: ExchangeRateInfo[];
+
+  @Field()
+  updatedAt!: Date;
+}

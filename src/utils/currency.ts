@@ -117,3 +117,96 @@ export const CRO_PER_TXC = getMultiplier('TXC');
 export const SATOSHI_PER_BTC = getMultiplier('BTC');
 export const WEI_PER_ETH = getMultiplier('ETH');
 export const CENTS_PER_DOLLAR = getMultiplier('USD');
+
+// ============================================
+// Exchange Rate Utilities
+// ============================================
+
+/**
+ * Exchange rate precision - rates are stored as rate * 10^8
+ * Example: 1 TXC = $2.88 USD is stored as 288000000
+ */
+export const EXCHANGE_RATE_DECIMALS = 8;
+export const EXCHANGE_RATE_MULTIPLIER = BigInt(10 ** EXCHANGE_RATE_DECIMALS);
+
+/**
+ * Store exchange rate with precision (multiply by 10^8)
+ * @param rate Exchange rate in big units (e.g., USD per TXC = 2.88)
+ * @returns Rate as BigInt with precision
+ */
+export function rateToStoredRate(rate: number): bigint {
+  return BigInt(Math.round(rate * Number(EXCHANGE_RATE_MULTIPLIER)));
+}
+
+/**
+ * Convert stored exchange rate to human-readable
+ * @param storedRate Rate stored as BigInt
+ * @returns Human-readable rate
+ */
+export function storedRateToRate(storedRate: bigint | number): number {
+  const value = typeof storedRate === 'bigint' ? storedRate : BigInt(storedRate);
+  return Number(value) / Number(EXCHANGE_RATE_MULTIPLIER);
+}
+
+/**
+ * Convert fiat amount (smallest unit) to crypto amount (smallest unit) using exchange rate
+ *
+ * Formula: cryptoSmallestUnit = (fiatSmallestUnit * cryptoMultiplier * RATE_MULTIPLIER) / (fiatMultiplier * storedRate)
+ *
+ * @param fiatSmallestUnit Amount in fiat smallest unit (e.g., cents)
+ * @param storedRate Exchange rate (price of 1 crypto in fiat, multiplied by 10^8)
+ * @param fiatCurrency Fiat currency code (e.g., 'USD')
+ * @param cryptoCurrency Crypto currency code (e.g., 'TXC')
+ * @returns Amount in crypto smallest unit (e.g., cros)
+ */
+export function fiatToCrypto(
+  fiatSmallestUnit: bigint | number,
+  storedRate: bigint | number,
+  fiatCurrency: CurrencyCode,
+  cryptoCurrency: CurrencyCode
+): bigint {
+  const fiat = typeof fiatSmallestUnit === 'bigint' ? fiatSmallestUnit : BigInt(fiatSmallestUnit);
+  const rate = typeof storedRate === 'bigint' ? storedRate : BigInt(storedRate);
+
+  const fiatMultiplier = getMultiplier(fiatCurrency);
+  const cryptoMultiplier = getMultiplier(cryptoCurrency);
+
+  // Convert fiat to its big unit, then divide by rate to get crypto big unit, then convert to smallest
+  // fiatBigUnit = fiatSmallestUnit / fiatMultiplier
+  // cryptoBigUnit = fiatBigUnit / (storedRate / RATE_MULTIPLIER)
+  // cryptoSmallestUnit = cryptoBigUnit * cryptoMultiplier
+  // Simplified: cryptoSmallestUnit = (fiatSmallestUnit * cryptoMultiplier * RATE_MULTIPLIER) / (fiatMultiplier * storedRate)
+  return (fiat * cryptoMultiplier * EXCHANGE_RATE_MULTIPLIER) / (fiatMultiplier * rate);
+}
+
+/**
+ * Convert crypto amount (smallest unit) to fiat amount (smallest unit) using exchange rate
+ *
+ * Formula: fiatSmallestUnit = (cryptoSmallestUnit * fiatMultiplier * storedRate) / (cryptoMultiplier * RATE_MULTIPLIER)
+ *
+ * @param cryptoSmallestUnit Amount in crypto smallest unit (e.g., cros)
+ * @param storedRate Exchange rate (price of 1 crypto in fiat, multiplied by 10^8)
+ * @param cryptoCurrency Crypto currency code (e.g., 'TXC')
+ * @param fiatCurrency Fiat currency code (e.g., 'USD')
+ * @returns Amount in fiat smallest unit (e.g., cents)
+ */
+export function cryptoToFiat(
+  cryptoSmallestUnit: bigint | number,
+  storedRate: bigint | number,
+  cryptoCurrency: CurrencyCode,
+  fiatCurrency: CurrencyCode
+): bigint {
+  const crypto =
+    typeof cryptoSmallestUnit === 'bigint' ? cryptoSmallestUnit : BigInt(cryptoSmallestUnit);
+  const rate = typeof storedRate === 'bigint' ? storedRate : BigInt(storedRate);
+
+  const cryptoMultiplier = getMultiplier(cryptoCurrency);
+  const fiatMultiplier = getMultiplier(fiatCurrency);
+
+  // Convert crypto smallest unit to fiat smallest unit using rate
+  // cryptoBigUnit = cryptoSmallestUnit / cryptoMultiplier
+  // fiatBigUnit = cryptoBigUnit * (storedRate / RATE_MULTIPLIER)
+  // fiatSmallestUnit = fiatBigUnit * fiatMultiplier
+  // Simplified: fiatSmallestUnit = (cryptoSmallestUnit * fiatMultiplier * storedRate) / (cryptoMultiplier * RATE_MULTIPLIER)
+  return (crypto * fiatMultiplier * rate) / (cryptoMultiplier * EXCHANGE_RATE_MULTIPLIER);
+}

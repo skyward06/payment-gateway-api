@@ -24,9 +24,10 @@ import { MerchantService } from '../merchant/merchant.service';
 import { PaymentTransaction } from '../paymentTransaction/paymentTransaction.entity';
 import { PaymentTransactionService } from '../paymentTransaction/paymentTransaction.service';
 
-import { Payment, PaymentMethodInfo, TokenPriceInfo } from './payment.entity';
+import { Payment, PaymentMethodInfo, TokenPriceInfo, AllExchangeRates } from './payment.entity';
 import { PaymentService } from './payment.service';
 import { CreatePaymentInput, PaymentQueryArgs } from './payment.type';
+import { CoinMarketCapService } from '@/service/coinMarketCap';
 
 @ObjectType()
 class PaymentListResponse {
@@ -44,7 +45,8 @@ export class PaymentResolver {
     private readonly service: PaymentService,
     private readonly apiKeyService: ApiKeyService,
     private readonly merchantService: MerchantService,
-    private readonly transactionService: PaymentTransactionService
+    private readonly transactionService: PaymentTransactionService,
+    private readonly coinMarketCapService: CoinMarketCapService
   ) {}
 
   // Public query - Get payment by ID (for payment page)
@@ -163,6 +165,20 @@ export class PaymentResolver {
     return {
       currency,
       priceUSD,
+      updatedAt: new Date(),
+    };
+  }
+
+  // Public - Get all exchange rates
+  @Query(() => AllExchangeRates)
+  async allExchangeRates(): Promise<AllExchangeRates> {
+    const prices = await this.coinMarketCapService.getAllPrices();
+    const rates = Object.entries(prices).map(([currency, priceUSD]) => ({
+      currency,
+      priceUSD,
+    }));
+    return {
+      rates,
       updatedAt: new Date(),
     };
   }
