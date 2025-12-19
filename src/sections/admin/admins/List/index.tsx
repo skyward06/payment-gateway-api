@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
@@ -9,31 +8,21 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Label } from 'src/components/Label';
 import { Iconify } from 'src/components/Iconify';
+import { TableNoData } from 'src/components/Table';
 
+import { Item } from './Item';
 import { useGetAdmins } from '../useApollo';
 
 export function AdminsView() {
   const router = useRouter();
-  const { loading, admins } = useGetAdmins();
-
-  if (loading) {
-    return (
-      <DashboardContent>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-          <CircularProgress />
-        </Box>
-      </DashboardContent>
-    );
-  }
+  const { admins } = useGetAdmins();
 
   return (
     <DashboardContent>
@@ -50,37 +39,23 @@ export function AdminsView() {
 
       <Card>
         <TableContainer>
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Created</TableCell>
+                <TableCell width={100}>Created</TableCell>
+                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               {admins.map((admin: any) => (
-                <TableRow key={admin.id}>
-                  <TableCell>{admin.name || '-'}</TableCell>
-                  <TableCell>{admin.email}</TableCell>
-                  <TableCell>{admin.role}</TableCell>
-                  <TableCell>
-                    <Label color={admin.isActive ? 'success' : 'error'}>
-                      {admin.isActive ? 'Active' : 'Inactive'}
-                    </Label>
-                  </TableCell>
-                  <TableCell>{new Date(admin.createdAt).toLocaleDateString()}</TableCell>
-                </TableRow>
+                <Item key={admin.id} admin={admin} />
               ))}
-              {admins.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    No admins found
-                  </TableCell>
-                </TableRow>
-              )}
+
+              <TableNoData notFound={!admins.length} />
             </TableBody>
           </Table>
         </TableContainer>

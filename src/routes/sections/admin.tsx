@@ -16,9 +16,12 @@ const AdminDashboardPage = lazy(() => import('src/pages/admin/dashboard'));
 const AdminMerchantsPage = lazy(() => import('src/pages/admin/merchants'));
 const AdminMerchantEditPage = lazy(() => import('src/pages/admin/merchant-edit'));
 const AdminPaymentsPage = lazy(() => import('src/pages/admin/payments'));
+
+// ----------------------------------------------------------------------
+const AdminProvider = lazy(() => import('src/libs/Admin'));
+const AdminEditPage = lazy(() => import('src/pages/admin/Admin/Edit'));
 const AdminsViewPage = lazy(() => import('src/pages/admin/Admin/List'));
 const AdminCreatePage = lazy(() => import('src/pages/admin/Admin/Create'));
-
 // ----------------------------------------------------------------------
 
 export const adminRoutes = [
@@ -44,6 +47,14 @@ export const adminRoutes = [
         children: [
           { index: true, element: <AdminsViewPage /> },
           { path: 'new', element: <AdminCreatePage /> },
+          {
+            path: ':id',
+            element: (
+              <AdminProvider>
+                <AdminEditPage />
+              </AdminProvider>
+            ),
+          },
         ],
       },
     ],

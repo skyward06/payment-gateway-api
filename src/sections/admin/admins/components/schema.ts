@@ -7,7 +7,7 @@ export type SchemaType = zod.infer<typeof Schema>;
 export const Schema = zod.object({
   name: zod.string().min(1, { message: 'Name is required' }),
   email: zod
-    .string({ error: 'Email is required' })
+    .string({ message: 'Email is required' })
     .email({ message: 'Invalid email address is provided' }),
   password: zod
     .string()

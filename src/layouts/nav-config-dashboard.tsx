@@ -11,14 +11,15 @@ const icon = (name: string) => (
 );
 
 const ICONS = {
-  dashboard: icon('ic-dashboard'),
-  user: icon('ic-user'),
+  admin: icon('ic-admin'),
   analytics: icon('ic-analytics'),
+  dashboard: icon('ic-dashboard'),
+  file: icon('ic-file'),
   invoice: icon('ic-invoice'),
   lock: icon('ic-lock'),
-  admin: icon('ic-admin'),
-  file: icon('ic-file'),
+  merchant: icon('ic-merchant'),
   network: icon('ic-network'),
+  user: icon('ic-user'),
 };
 
 // ----------------------------------------------------------------------
@@ -29,7 +30,7 @@ export const adminNavData = [
     subheader: 'Admin',
     items: [
       { title: 'Dashboard', path: paths.admin.dashboard, icon: ICONS.dashboard },
-      { title: 'Merchants', path: paths.admin.merchants, icon: ICONS.user },
+      { title: 'Merchants', path: paths.admin.merchants, icon: ICONS.merchant },
       { title: 'Payments', path: paths.admin.payments, icon: ICONS.invoice },
       { title: 'Admins', path: paths.admin.admins.root, icon: ICONS.admin },
     ],
