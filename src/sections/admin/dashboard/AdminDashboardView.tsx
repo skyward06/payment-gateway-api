@@ -1,5 +1,3 @@
-import type { IconifyName } from 'src/components/Iconify';
-
 import { useQuery } from '@apollo/client';
 
 import Box from '@mui/material/Box';
@@ -22,47 +20,7 @@ import { GET_MERCHANTS, GET_ADMIN_PAYMENTS, GET_ALL_EXCHANGE_RATES } from 'src/g
 
 import { Iconify } from 'src/components/Iconify';
 
-// ----------------------------------------------------------------------
-
-type StatCardProps = {
-  title: string;
-  value: string | number;
-  icon: string;
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
-};
-
-function StatCard({ title, value, icon, color = 'primary' }: StatCardProps) {
-  return (
-    <Card sx={{ p: 3 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Box>
-          <Typography variant="subtitle2" color="text.secondary">
-            {title}
-          </Typography>
-          <Typography variant="h3" mt={1}>
-            {value}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: `${color}.lighter`,
-            color: `${color}.main`,
-          }}
-        >
-          <Iconify icon={icon as IconifyName} width={32} />
-        </Box>
-      </Stack>
-    </Card>
-  );
-}
-
-// ----------------------------------------------------------------------
+import { StatCard } from './StatCard';
 
 export function AdminDashboardView() {
   const { data: merchantsData, loading: merchantsLoading } = useQuery(GET_MERCHANTS, {
@@ -130,7 +88,6 @@ export function AdminDashboardView() {
         </Grid>
       </Grid>
 
-      {/* Exchange Rates Section */}
       <Card sx={{ mt: 4, p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
           <Stack direction="row" alignItems="center" spacing={1}>
