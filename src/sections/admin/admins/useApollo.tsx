@@ -3,10 +3,17 @@ import type { CreateAdminInput, UpdateAdminInput } from 'src/__generated__/graph
 import { useCallback } from 'react';
 import { useMutation, useSuspenseQuery } from '@apollo/client';
 
-import { GET_ADMINS, CREATE_ADMIN, UPDATE_ADMIN } from './query';
+import {
+  FETCH_ADMINS,
+  CREATE_ADMIN,
+  UPDATE_ADMIN,
+  REMOVE_ADMIN,
+  ACTIVATE_ADMIN,
+  DEACTIVATE_ADMIN,
+} from './query';
 
-export function useGetAdmins() {
-  const { data } = useSuspenseQuery(GET_ADMINS, { variables: { take: 50, skip: 0 } });
+export function useFetchAdmins() {
+  const { data } = useSuspenseQuery(FETCH_ADMINS, { variables: { take: 50, skip: 0 } });
 
   return { admins: data?.admins.admins ?? [] };
 }
@@ -14,7 +21,7 @@ export function useGetAdmins() {
 export function useCreateAdmin() {
   const [submit, { loading }] = useMutation(CREATE_ADMIN, {
     awaitRefetchQueries: true,
-    refetchQueries: ['GetAdmins'],
+    refetchQueries: ['Admins'],
   });
 
   const createAdmin = useCallback(
@@ -28,7 +35,7 @@ export function useCreateAdmin() {
 export function useUpdateAdmin() {
   const [submit, { loading }] = useMutation(UPDATE_ADMIN, {
     awaitRefetchQueries: true,
-    refetchQueries: ['GetAdmins'],
+    refetchQueries: ['Admins'],
   });
 
   const updateAdmin = useCallback(
@@ -37,4 +44,46 @@ export function useUpdateAdmin() {
   );
 
   return { loading, updateAdmin };
+}
+
+export function useRemoveAdmin() {
+  const [submit, { loading }] = useMutation(REMOVE_ADMIN, {
+    awaitRefetchQueries: true,
+    refetchQueries: ['Admins'],
+  });
+
+  const removeAdmin = useCallback(
+    (id: string) => submit({ variables: { data: { id } } }),
+    [submit]
+  );
+
+  return { loading, removeAdmin };
+}
+
+export function useActivateAdmin() {
+  const [submit, { loading }] = useMutation(ACTIVATE_ADMIN, {
+    awaitRefetchQueries: true,
+    refetchQueries: ['Admins'],
+  });
+
+  const activateAdmin = useCallback(
+    (id: string) => submit({ variables: { data: { id } } }),
+    [submit]
+  );
+
+  return { loading, activateAdmin };
+}
+
+export function useDeactivateAdmin() {
+  const [submit, { loading }] = useMutation(DEACTIVATE_ADMIN, {
+    awaitRefetchQueries: true,
+    refetchQueries: ['Admins'],
+  });
+
+  const deactivateAdmin = useCallback(
+    (id: string) => submit({ variables: { data: { id } } }),
+    [submit]
+  );
+
+  return { loading, deactivateAdmin };
 }

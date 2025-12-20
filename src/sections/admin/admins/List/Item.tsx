@@ -26,7 +26,7 @@ export function Item({ admin }: Props) {
       </TableCell>
       <TableCell>{formatDate(admin.createdAt)}</TableCell>
       <TableCell align="right">
-        <ActionRender id={admin.id} />
+        <ActionRender current={admin} />
       </TableCell>
     </TableRow>
   );

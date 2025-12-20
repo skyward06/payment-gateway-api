@@ -18,11 +18,11 @@ import { Iconify } from 'src/components/Iconify';
 import { TableNoData } from 'src/components/Table';
 
 import { Item } from './Item';
-import { useGetAdmins } from '../useApollo';
+import { useFetchAdmins } from '../useApollo';
 
 export function AdminsView() {
   const router = useRouter();
-  const { admins } = useGetAdmins();
+  const { admins } = useFetchAdmins();
 
   return (
     <DashboardContent>
@@ -46,7 +46,7 @@ export function AdminsView() {
                 <TableCell>Email</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell width={100}>Created</TableCell>
+                <TableCell width={100}>Created At</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>

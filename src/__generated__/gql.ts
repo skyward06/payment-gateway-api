@@ -41,9 +41,12 @@ type Documents = {
     "\n  query GetTokenPrice($currency: PaymentCurrency!) {\n    tokenPrice(currency: $currency) {\n      currency\n      priceUSD\n      updatedAt\n    }\n  }\n": typeof types.GetTokenPriceDocument,
     "\n  query GetAllExchangeRates {\n    allExchangeRates {\n      rates {\n        currency\n        priceUSD\n      }\n      updatedAt\n    }\n  }\n": typeof types.GetAllExchangeRatesDocument,
     "\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n": typeof types.AdminDocument,
-    "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": typeof types.GetAdminsDocument,
+    "\n  query Admins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": typeof types.AdminsDocument,
     "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.CreateAdminDocument,
     "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.UpdateAdminDocument,
+    "\n  mutation RemoveAdmin($data: IDInput!) {\n    removeAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.RemoveAdminDocument,
+    "\n  mutation ActivateAdmin($data: IDInput!) {\n    activateAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.ActivateAdminDocument,
+    "\n  mutation DeactivateAdmin($data: IDInput!) {\n    deactivateAdmin(data: $data) {\n      id\n    }\n  }\n": typeof types.DeactivateAdminDocument,
 };
 const documents: Documents = {
     "\n  mutation AdminLogin($data: AdminLoginInput!) {\n    adminLogin(data: $data) {\n      admin {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      token\n    }\n  }\n": types.AdminLoginDocument,
@@ -73,9 +76,12 @@ const documents: Documents = {
     "\n  query GetTokenPrice($currency: PaymentCurrency!) {\n    tokenPrice(currency: $currency) {\n      currency\n      priceUSD\n      updatedAt\n    }\n  }\n": types.GetTokenPriceDocument,
     "\n  query GetAllExchangeRates {\n    allExchangeRates {\n      rates {\n        currency\n        priceUSD\n      }\n      updatedAt\n    }\n  }\n": types.GetAllExchangeRatesDocument,
     "\n  query Admin($data: IDInput!) {\n    admin(data: $data) {\n      id\n      email\n      name\n      role\n      isActive\n      createdAt\n    }\n  }\n": types.AdminDocument,
-    "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": types.GetAdminsDocument,
+    "\n  query Admins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n": types.AdminsDocument,
     "\n  mutation CreateAdmin($data: CreateAdminInput!) {\n    createAdmin(data: $data) {\n      id\n    }\n  }\n": types.CreateAdminDocument,
     "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n": types.UpdateAdminDocument,
+    "\n  mutation RemoveAdmin($data: IDInput!) {\n    removeAdmin(data: $data) {\n      id\n    }\n  }\n": types.RemoveAdminDocument,
+    "\n  mutation ActivateAdmin($data: IDInput!) {\n    activateAdmin(data: $data) {\n      id\n    }\n  }\n": types.ActivateAdminDocument,
+    "\n  mutation DeactivateAdmin($data: IDInput!) {\n    deactivateAdmin(data: $data) {\n      id\n    }\n  }\n": types.DeactivateAdminDocument,
 };
 
 /**
@@ -203,7 +209,7 @@ export function gql(source: "\n  query Admin($data: IDInput!) {\n    admin(data:
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"): (typeof documents)["\n  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"];
+export function gql(source: "\n  query Admins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"): (typeof documents)["\n  query Admins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {\n    admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {\n      admins {\n        id\n        email\n        name\n        role\n        isActive\n        createdAt\n      }\n      total\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -212,6 +218,18 @@ export function gql(source: "\n  mutation CreateAdmin($data: CreateAdminInput!) 
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateAdmin($data: UpdateAdminInput!) {\n    updateAdmin(data: $data) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation RemoveAdmin($data: IDInput!) {\n    removeAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation RemoveAdmin($data: IDInput!) {\n    removeAdmin(data: $data) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation ActivateAdmin($data: IDInput!) {\n    activateAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation ActivateAdmin($data: IDInput!) {\n    activateAdmin(data: $data) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation DeactivateAdmin($data: IDInput!) {\n    deactivateAdmin(data: $data) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation DeactivateAdmin($data: IDInput!) {\n    deactivateAdmin(data: $data) {\n      id\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

@@ -1,7 +1,7 @@
 import { gql } from 'src/__generated__/gql';
 
-export const GET_ADMINS = gql(/* GraphQL */ `
-  query GetAdmins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {
+export const FETCH_ADMINS = gql(/* GraphQL */ `
+  query Admins($search: String, $isActive: Boolean, $take: Int, $skip: Int) {
     admins(search: $search, isActive: $isActive, take: $take, skip: $skip) {
       admins {
         id
@@ -27,6 +27,30 @@ export const CREATE_ADMIN = gql(/* GraphQL */ `
 export const UPDATE_ADMIN = gql(/* GraphQL */ `
   mutation UpdateAdmin($data: UpdateAdminInput!) {
     updateAdmin(data: $data) {
+      id
+    }
+  }
+`);
+
+export const REMOVE_ADMIN = gql(/* GraphQL */ `
+  mutation RemoveAdmin($data: IDInput!) {
+    removeAdmin(data: $data) {
+      id
+    }
+  }
+`);
+
+export const ACTIVATE_ADMIN = gql(/* GraphQL */ `
+  mutation ActivateAdmin($data: IDInput!) {
+    activateAdmin(data: $data) {
+      id
+    }
+  }
+`);
+
+export const DEACTIVATE_ADMIN = gql(/* GraphQL */ `
+  mutation DeactivateAdmin($data: IDInput!) {
+    deactivateAdmin(data: $data) {
       id
     }
   }
