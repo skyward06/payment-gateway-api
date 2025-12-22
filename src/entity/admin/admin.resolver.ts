@@ -43,10 +43,10 @@ export class AdminResolver {
   }
 
   @Authorized([UserRole.ADMIN])
-  @Query(() => Admin, { nullable: true })
+  @Query(() => Admin)
   async admin(@Arg('data') data: IDInput): Promise<Admin | null> {
     const admin = await this.service.findById(data.id);
-    return admin as unknown as Admin | null;
+    return admin as Admin;
   }
 
   @Authorized([UserRole.ADMIN])
@@ -59,7 +59,6 @@ export class AdminResolver {
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Admin)
   async createAdmin(@Arg('data') data: CreateAdminInput): Promise<Admin> {
-    // Check if email already exists
     const existing = await this.service.findByEmail(data.email);
     if (existing) {
       throw new GraphQLError('Email already registered');
@@ -70,15 +69,29 @@ export class AdminResolver {
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Admin)
-  async updateAdmin(@Arg('id') id: string, @Arg('data') data: UpdateAdminInput): Promise<Admin> {
-    const admin = await this.service.update(id, data);
+  async updateAdmin(@Arg('data') data: UpdateAdminInput): Promise<Admin> {
+    const admin = await this.service.update(data);
     return admin as unknown as Admin;
   }
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Admin)
-  async deleteAdmin(@Arg('data') data: IDInput): Promise<Admin> {
+  async removeAdmin(@Arg('data') data: IDInput): Promise<Admin> {
     const admin = await this.service.delete(data.id);
+    return admin as unknown as Admin;
+  }
+
+  @Authorized([UserRole.ADMIN])
+  @Mutation(() => Admin)
+  async activateAdmin(@Arg('data') data: IDInput): Promise<Admin> {
+    const admin = await this.service.update({ id: data.id, isActive: true });
+    return admin as unknown as Admin;
+  }
+
+  @Authorized([UserRole.ADMIN])
+  @Mutation(() => Admin)
+  async deactivateAdmin(@Arg('data') data: IDInput): Promise<Admin> {
+    const admin = await this.service.update({ id: data.id, isActive: false });
     return admin as unknown as Admin;
   }
 }

@@ -57,7 +57,7 @@ export class AdminService {
     });
   }
 
-  async update(id: string, data: UpdateAdminInput): Promise<Admin> {
+  async update({ id, ...data }: UpdateAdminInput): Promise<Admin> {
     const updateData: any = {};
 
     if (data.name !== undefined) updateData.name = data.name;
@@ -73,10 +73,7 @@ export class AdminService {
   }
 
   async delete(id: string): Promise<Admin> {
-    return this.prisma.admin.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    return this.prisma.admin.delete({ where: { id } });
   }
 
   async findAll(

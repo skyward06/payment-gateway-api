@@ -1,5 +1,5 @@
 import { IsEmail, MinLength } from 'class-validator';
-import { ArgsType, Field, InputType, Int } from 'type-graphql';
+import { ArgsType, Field, ID, InputType, Int } from 'type-graphql';
 
 @InputType()
 export class AdminLoginInput {
@@ -28,8 +28,14 @@ export class CreateAdminInput {
 
 @InputType()
 export class UpdateAdminInput {
+  @Field(() => ID)
+  id!: string;
+
   @Field({ nullable: true })
   name?: string;
+
+  @Field({ nullable: true })
+  email?: string;
 
   @Field({ nullable: true })
   @MinLength(6)
