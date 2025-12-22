@@ -49,7 +49,7 @@ async function bootstrap() {
 
   // Middleware
   app.use(cors());
-  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(express.json({ limit: '50mb' }));
 
   // Health check endpoint
   app.get('/health', (_, res) => {
