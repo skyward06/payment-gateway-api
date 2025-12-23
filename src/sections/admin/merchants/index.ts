@@ -1,2 +1,2 @@
-export { AdminMerchantsView } from './AdminMerchantsView';
+export { AdminMerchantsView } from './List';
 export { AdminMerchantEditView } from './AdminMerchantEditView';

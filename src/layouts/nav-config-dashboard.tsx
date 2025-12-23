@@ -30,7 +30,7 @@ export const adminNavData = [
     subheader: 'Admin',
     items: [
       { title: 'Dashboard', path: paths.admin.dashboard, icon: ICONS.dashboard },
-      { title: 'Merchants', path: paths.admin.merchants, icon: ICONS.merchant },
+      { title: 'Merchants', path: paths.admin.merchants.root, icon: ICONS.merchant },
       { title: 'Payments', path: paths.admin.payments, icon: ICONS.invoice },
       { title: 'Admins', path: paths.admin.admins.root, icon: ICONS.admin },
     ],

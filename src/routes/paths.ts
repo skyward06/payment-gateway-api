@@ -35,7 +35,11 @@ export const paths = {
   admin: {
     root: ROOTS.ADMIN,
     dashboard: `${ROOTS.ADMIN}/dashboard`,
-    merchants: `${ROOTS.ADMIN}/merchants`,
+    // merchants: `${ROOTS.ADMIN}/merchants`,
+    merchants: {
+      root: `${ROOTS.ADMIN}/merchants`,
+      edit: (id: string) => `${ROOTS.ADMIN}/merchants/${id}`,
+    },
     payments: `${ROOTS.ADMIN}/payments`,
     admins: {
       root: `${ROOTS.ADMIN}/admins`,

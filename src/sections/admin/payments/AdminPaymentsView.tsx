@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery } from '@apollo/client';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -17,9 +16,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { fDateTime } from 'src/utils/format-time';
 
-import { GET_ADMIN_PAYMENTS } from 'src/graphql';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CURRENCIES, PAYMENT_STATUS, formatCryptoAmount } from 'src/consts';
+
+import { useFetchAdminPayments } from './useApollo';
 
 // ----------------------------------------------------------------------
 
@@ -27,15 +27,11 @@ export function AdminPaymentsView() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { data, loading } = useQuery(GET_ADMIN_PAYMENTS, {
-    variables: {
-      take: rowsPerPage,
-      skip: page * rowsPerPage,
-    },
+  const { payments, total } = useFetchAdminPayments({
+    take: rowsPerPage,
+    skip: page * rowsPerPage,
   });
-
-  const payments = data?.adminPayments?.payments || [];
-  const total = data?.adminPayments?.total || 0;
+  const loading = false; // Suspense handles loading
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);

@@ -1,18 +1,17 @@
 import type { Resolver } from 'react-hook-form';
 
 import { z as zod } from 'zod';
+import { useParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation } from '@apollo/client';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Tabs from '@mui/material/Tabs';
 import Grid from '@mui/material/Grid';
+import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
@@ -22,26 +21,27 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import CardContent from '@mui/material/CardContent';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 
 import { fDateTime } from 'src/utils/format-time';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import {
-  GET_MERCHANT,
-  VERIFY_MERCHANT,
-  DELETE_MERCHANT,
-  ACTIVATE_MERCHANT,
-  UNVERIFY_MERCHANT,
-  DEACTIVATE_MERCHANT,
-  ADMIN_UPDATE_MERCHANT,
-} from 'src/graphql';
 
 import { toast } from 'src/components/SnackBar';
 import { Iconify } from 'src/components/Iconify';
 import { Form, Field } from 'src/components/Form';
+
+import {
+  useFetchMerchant,
+  useDeleteMerchant,
+  useVerifyMerchant,
+  useActivateMerchant,
+  useUnverifyMerchant,
+  useDeactivateMerchant,
+  useAdminUpdateMerchant,
+} from './useApollo';
 
 // ----------------------------------------------------------------------
 
@@ -62,63 +62,16 @@ type MerchantEditSchemaType = zod.infer<typeof MerchantEditSchema>;
 
 export function AdminMerchantEditView() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentTab, setCurrentTab] = useState('details');
 
-  const { data, loading, refetch } = useQuery(GET_MERCHANT, {
-    variables: { data: { id } },
-    skip: !id,
-  });
-
-  const [updateMerchant, { loading: updating }] = useMutation(ADMIN_UPDATE_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant updated successfully');
-      refetch();
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const [activateMerchant, { loading: activating }] = useMutation(ACTIVATE_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant activated successfully');
-      refetch();
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const [deactivateMerchant, { loading: deactivating }] = useMutation(DEACTIVATE_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant deactivated');
-      refetch();
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const [verifyMerchant, { loading: verifying }] = useMutation(VERIFY_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant verified successfully');
-      refetch();
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const [unverifyMerchant, { loading: unverifying }] = useMutation(UNVERIFY_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant verification removed');
-      refetch();
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const [deleteMerchant, { loading: deleting }] = useMutation(DELETE_MERCHANT, {
-    onCompleted: () => {
-      toast.success('Merchant deleted');
-      navigate(paths.admin.merchants);
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
-  const merchant = data?.merchant;
+  const { merchant } = useFetchMerchant(id!);
+  const { updateMerchant, loading: updating } = useAdminUpdateMerchant();
+  const { activateMerchant, loading: activating } = useActivateMerchant();
+  const { deactivateMerchant, loading: deactivating } = useDeactivateMerchant();
+  const { verifyMerchant, loading: verifying } = useVerifyMerchant();
+  const { unverifyMerchant, loading: unverifying } = useUnverifyMerchant();
+  const { deleteMerchant, loading: deleting } = useDeleteMerchant();
 
   const methods = useForm<MerchantEditSchemaType>({
     resolver: zodResolver(MerchantEditSchema) as Resolver<MerchantEditSchemaType>,
@@ -154,45 +107,76 @@ export function AdminMerchantEditView() {
 
   const onSubmit = handleSubmit(async (formData) => {
     if (!merchant) return;
-    await updateMerchant({
-      variables: {
-        data: {
-          id: merchant.id,
-          name: formData.name,
-          website: formData.website || undefined,
-          webhookUrl: formData.webhookUrl || undefined,
-          description: formData.description || undefined,
-          defaultExpirationMinutes: formData.defaultExpirationMinutes,
-          autoConfirmations: formData.autoConfirmations,
-          allowPartialPayments: formData.allowPartialPayments,
-          collectCustomerEmail: formData.collectCustomerEmail,
-        },
-      },
-    });
+    try {
+      await updateMerchant({
+        id: merchant.id,
+        name: formData.name,
+        website: formData.website || undefined,
+        webhookUrl: formData.webhookUrl || undefined,
+        description: formData.description || undefined,
+        defaultExpirationMinutes: formData.defaultExpirationMinutes,
+        autoConfirmations: formData.autoConfirmations,
+        allowPartialPayments: formData.allowPartialPayments,
+        collectCustomerEmail: formData.collectCustomerEmail,
+      });
+      toast.success('Merchant updated successfully');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   });
 
-  const handleActivate = () => {
-    if (merchant) activateMerchant({ variables: { data: { id: merchant.id } } });
+  const handleActivate = async () => {
+    if (!merchant) return;
+    try {
+      await activateMerchant(merchant.id);
+      toast.success('Merchant activated successfully');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
-  const handleDeactivate = () => {
-    if (merchant) deactivateMerchant({ variables: { data: { id: merchant.id } } });
+  const handleDeactivate = async () => {
+    if (!merchant) return;
+    try {
+      await deactivateMerchant(merchant.id);
+      toast.success('Merchant deactivated');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
-  const handleVerify = () => {
-    if (merchant) verifyMerchant({ variables: { data: { id: merchant.id } } });
+  const handleVerify = async () => {
+    if (!merchant) return;
+    try {
+      await verifyMerchant(merchant.id);
+      toast.success('Merchant verified successfully');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
-  const handleUnverify = () => {
-    if (merchant) unverifyMerchant({ variables: { data: { id: merchant.id } } });
+  const handleUnverify = async () => {
+    if (!merchant) return;
+    try {
+      await unverifyMerchant(merchant.id);
+      toast.success('Merchant verification removed');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (
       merchant &&
       window.confirm('Are you sure you want to delete this merchant? This action cannot be undone.')
     ) {
-      deleteMerchant({ variables: { data: { id: merchant.id } } });
+      try {
+        await deleteMerchant(merchant.id);
+        toast.success('Merchant deleted');
+        router.push(paths.admin.merchants.root);
+      } catch (error: any) {
+        toast.error(error.message);
+      }
     }
   };
 
@@ -202,15 +186,7 @@ export function AdminMerchantEditView() {
     { value: 'networks', label: 'Networks', icon: <Iconify icon="mdi:network" /> },
   ];
 
-  if (loading) {
-    return (
-      <DashboardContent>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-          <CircularProgress />
-        </Box>
-      </DashboardContent>
-    );
-  }
+  // Suspense handles loading for useFetchMerchant
 
   if (!merchant) {
     return (
@@ -219,7 +195,7 @@ export function AdminMerchantEditView() {
         <Button
           variant="outlined"
           startIcon={<Iconify icon="mdi:arrow-left" />}
-          onClick={() => navigate(paths.admin.merchants)}
+          onClick={() => router.push(paths.admin.merchants.root)}
           sx={{ mt: 2 }}
         >
           Back to Merchants
@@ -235,7 +211,7 @@ export function AdminMerchantEditView() {
           <Button
             variant="outlined"
             startIcon={<Iconify icon="mdi:arrow-left" />}
-            onClick={() => navigate(paths.admin.merchants)}
+            onClick={() => router.push(paths.admin.merchants.root)}
           >
             Back
           </Button>
@@ -430,7 +406,7 @@ export function AdminMerchantEditView() {
                   <IconButton
                     size="small"
                     onClick={() => {
-                      navigator.clipboard.writeText(merchant.webhookSecret);
+                      navigator.clipboard.writeText(merchant.webhookSecret || '');
                       toast.success('Copied to clipboard');
                     }}
                   >
