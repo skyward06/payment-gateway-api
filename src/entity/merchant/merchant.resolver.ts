@@ -1,5 +1,5 @@
 import { UserRole } from '@/generated/prisma/client';
-import { GraphQLError } from 'graphql';
+import { GraphQLError, GraphQLResolveInfo } from 'graphql';
 import {
   Arg,
   Args,
@@ -7,6 +7,7 @@ import {
   Ctx,
   Field,
   FieldResolver,
+  Info,
   Mutation,
   ObjectType,
   Query,
@@ -30,6 +31,7 @@ import {
   UpdateMerchantNetworkInput,
 } from './merchant.type';
 import { MerchantNetwork } from './merchantNetwork.entity';
+import graphqlFields from 'graphql-fields';
 
 @ObjectType()
 class MerchantLoginResponse {
@@ -41,12 +43,9 @@ class MerchantLoginResponse {
 }
 
 @ObjectType()
-class MerchantListResponse {
+class MerchantsResponse {
   @Field(() => [Merchant])
-  merchants!: Merchant[];
-
-  @Field()
-  total!: number;
+  merchants?: Merchant[];
 }
 
 @Service()
@@ -148,10 +147,36 @@ export class MerchantResolver {
   }
 
   @Authorized([UserRole.ADMIN])
-  @Query(() => MerchantListResponse)
-  async merchants(@Args() args: MerchantQueryArgs): Promise<MerchantListResponse> {
-    const result = await this.service.findAll(args.search, args.isActive, args.take, args.skip);
-    return result as unknown as MerchantListResponse;
+  @Query(() => MerchantsResponse)
+  async merchants(
+    @Args() query: MerchantQueryArgs,
+    @Info() info: GraphQLResolveInfo
+  ): Promise<MerchantsResponse> {
+    const fields = graphqlFields(info);
+
+    // TODO: Update array type any to Merchant
+    const promises: { total?: Promise<number>; merchants?: Promise<any[]> } = {};
+
+    if ('total' in fields) {
+      promises.total = this.service.getMerchantsCount(query);
+    }
+
+    if ('merchants' in fields) {
+      promises.merchants = this.service.getMerchants(query);
+    }
+
+    const result = await Promise.all([promises.total, promises.merchants]);
+
+    const response: { total?: number; merchants?: Merchant[] } = {};
+
+    if (promises.total) {
+      response.total = result[0];
+    }
+    if (promises.merchants) {
+      response.merchants = result[1];
+    }
+
+    return response;
   }
 
   @Authorized([UserRole.ADMIN])

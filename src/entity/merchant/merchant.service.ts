@@ -9,6 +9,7 @@ import { PrismaService } from '@/service/prisma';
 import {
   AddMerchantNetworkInput,
   CreateMerchantInput,
+  MerchantQueryArgs,
   UpdateMerchantInput,
   UpdateMerchantNetworkInput,
 } from './merchant.type';
@@ -201,6 +202,18 @@ export class MerchantService {
       data: { webhookSecret },
     });
     return webhookSecret;
+  }
+
+  async getMerchants(params: MerchantQueryArgs) {
+    return this.prisma.merchant.findMany({
+      where: params.where,
+      orderBy: params.orderBy,
+      ...params.parsePage,
+    });
+  }
+
+  async getMerchantsCount({ where }: Pick<MerchantQueryArgs, 'where'>): Promise<number> {
+    return this.prisma.merchant.count({ where });
   }
 
   verifyToken(token: string): { id: string; email: string; role: UserRole } | null {

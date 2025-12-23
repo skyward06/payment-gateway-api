@@ -4,6 +4,7 @@ import { BaseEntity } from '@/graphql/baseEntity';
 
 import { ApiKey } from '../apiKey/apiKey.entity';
 import { MerchantNetwork } from './merchantNetwork.entity';
+import { IsUrl } from 'class-validator';
 
 @ObjectType()
 export class Merchant extends BaseEntity {
@@ -19,6 +20,7 @@ export class Merchant extends BaseEntity {
   password?: string;
 
   @Field({ nullable: true })
+  @IsUrl()
   website?: string;
 
   @Field({ nullable: true })

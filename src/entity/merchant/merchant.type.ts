@@ -1,6 +1,10 @@
-import { PaymentCurrency, PaymentNetwork } from '@/generated/prisma/client';
+import { PaymentCurrency, PaymentNetwork, Prisma } from '@/generated/prisma/client';
+import { QueryArgsBase } from '@/graphql/queryArgs';
 import { IsEmail, IsUrl, MinLength } from 'class-validator';
 import { ArgsType, Field, InputType, Int } from 'type-graphql';
+
+@ArgsType()
+export class MerchantQueryArgs extends QueryArgsBase<Prisma.MerchantWhereInput> {}
 
 @InputType()
 export class MerchantLoginInput {
@@ -123,19 +127,4 @@ export class UpdateMerchantNetworkInput {
 
   @Field({ nullable: true })
   isActive?: boolean;
-}
-
-@ArgsType()
-export class MerchantQueryArgs {
-  @Field({ nullable: true })
-  search?: string;
-
-  @Field({ nullable: true })
-  isActive?: boolean;
-
-  @Field(() => Int, { nullable: true, defaultValue: 20 })
-  take?: number;
-
-  @Field(() => Int, { nullable: true, defaultValue: 0 })
-  skip?: number;
 }
