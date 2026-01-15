@@ -205,6 +205,7 @@ export class MerchantService {
   }
 
   async getMerchants(params: MerchantQueryArgs) {
+    console.log('where: ', params.where);
     return this.prisma.merchant.findMany({
       where: params.where,
       orderBy: params.orderBy,

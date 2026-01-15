@@ -46,6 +46,9 @@ class MerchantLoginResponse {
 class MerchantsResponse {
   @Field(() => [Merchant])
   merchants?: Merchant[];
+
+  @Field(() => Number)
+  total?: number;
 }
 
 @Service()
