@@ -38,15 +38,20 @@ export abstract class QueryArgsBase<WhereType> {
 
   // This is for type generation, does not validate any actual inputs
   get where(): WhereType | undefined {
-    const filter = _.keys(this.filter).reduce((prev, key) => {
+    if (!this.filter) {
+      return undefined;
+    }
+
+    const filter = _.keys(this.filter).reduce<Record<string, any>>((prev, key) => {
       if (key.includes('_')) {
-        prev['OR'] = key.split('_').map((field) => ({ [field]: this.filter[key] }));
+        prev['OR'] = key.split('_').map((field) => ({ [field]: this.filter![key] }));
       } else {
-        prev[key] = this.filter[key];
+        prev[key] = this.filter![key];
       }
 
       return prev;
     }, {});
-    return Prisma.validator<WhereType>()(filter as any);
+
+    return filter as WhereType;
   }
 }
