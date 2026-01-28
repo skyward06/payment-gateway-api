@@ -1,8 +1,10 @@
-import { PaymentCurrency, PaymentNetwork, PaymentStatus } from '@/generated/prisma/client';
+import { PaymentCurrency, PaymentNetwork, PaymentStatus, Prisma } from '@/generated/prisma/client';
+import { QueryArgsBase } from '@/graphql/queryArgs';
 import { IsEmail, IsUrl } from 'class-validator';
 import { GraphQLBigInt } from 'graphql-scalars';
 import GraphQLJSON from 'graphql-type-json';
-import { ArgsType, Field, InputType, Int } from 'type-graphql';
+import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { Payment } from './payment.entity';
 
 /**
  * SMALLEST UNIT CONVENTION:
@@ -88,18 +90,15 @@ export class PaymentWhereInput {
 }
 
 @ArgsType()
-export class PaymentQueryArgs {
-  @Field(() => PaymentWhereInput, { nullable: true })
-  where?: PaymentWhereInput;
+export class PaymentQueryArgs extends QueryArgsBase<Prisma.PaymentWhereInput> {}
 
-  @Field(() => Int, { nullable: true, defaultValue: 20 })
-  take?: number;
+@ObjectType()
+export class PaymentsResponse {
+  @Field(() => [Payment])
+  payments?: Payment[];
 
-  @Field(() => Int, { nullable: true, defaultValue: 0 })
-  skip?: number;
-
-  @Field({ nullable: true })
-  orderBy?: string;
+  @Field(() => Number)
+  total?: number;
 }
 
 @InputType()

@@ -1,14 +1,13 @@
 import { PaymentCurrency, UserRole } from '@/generated/prisma/client';
-import { GraphQLError } from 'graphql';
+import { GraphQLError, GraphQLResolveInfo } from 'graphql';
 import {
   Arg,
   Args,
   Authorized,
   Ctx,
-  Field,
   FieldResolver,
+  Info,
   Mutation,
-  ObjectType,
   Query,
   Resolver,
   Root,
@@ -27,16 +26,8 @@ import { PaymentTransactionService } from '../paymentTransaction/paymentTransact
 import { CoinMarketCapService } from '@/service/coinMarketCap';
 import { AllExchangeRates, Payment, PaymentMethodInfo, TokenPriceInfo } from './payment.entity';
 import { PaymentService } from './payment.service';
-import { CreatePaymentInput, PaymentQueryArgs } from './payment.type';
-
-@ObjectType()
-class PaymentListResponse {
-  @Field(() => [Payment])
-  payments!: Payment[];
-
-  @Field()
-  total!: number;
-}
+import { CreatePaymentInput, PaymentQueryArgs, PaymentsResponse } from './payment.type';
+import graphqlFields from 'graphql-fields';
 
 @Service()
 @Resolver(() => Payment)
@@ -87,19 +78,51 @@ export class PaymentResolver {
   }
 
   // API Key authenticated - List payments
-  @Query(() => PaymentListResponse)
+  @Query(() => PaymentsResponse)
   async payments(
     @Arg('apiKey') apiKey: string,
-    @Args() args: PaymentQueryArgs
-  ): Promise<PaymentListResponse> {
+    @Args() query: PaymentQueryArgs,
+    @Info() info: GraphQLResolveInfo
+  ): Promise<PaymentsResponse> {
     const key = await this.apiKeyService.validatePublicKeyOnly(apiKey);
     if (!key) {
       throw new GraphQLError('Invalid API key');
     }
 
-    const where = { ...args.where, merchantId: key.merchantId };
-    const result = await this.service.findAll(where, args.take, args.skip);
-    return result as unknown as PaymentListResponse;
+    const fields = graphqlFields(info);
+
+    const promises: { total?: Promise<number>; payments?: Promise<any[]> } = {};
+
+    query.filter = {
+      AND: [
+        query.filter,
+        {
+          merchantId: key.merchantId,
+        },
+      ].filter(Boolean),
+    };
+
+    if ('total' in fields) {
+      promises.total = this.service.getPaymentsCount(query);
+    }
+
+    if ('payments' in fields) {
+      promises.payments = this.service.getPayments(query);
+    }
+
+    const result = await Promise.all([promises.total, promises.payments]);
+
+    const response: { total?: number; payments?: Payment[] } = {};
+
+    if (promises.total) {
+      response.total = result[0];
+    }
+
+    if (promises.payments) {
+      response.payments = result[1];
+    }
+
+    return response;
   }
 
   // API Key authenticated - Cancel payment
@@ -116,26 +139,84 @@ export class PaymentResolver {
 
   // Merchant authenticated - List own payments
   @Authorized([UserRole.MERCHANT])
-  @Query(() => PaymentListResponse)
+  @Query(() => PaymentsResponse)
   async myPayments(
     @Ctx() ctx: Context,
-    @Args() args: PaymentQueryArgs
-  ): Promise<PaymentListResponse> {
+    @Args() query: PaymentQueryArgs,
+    @Info() info: GraphQLResolveInfo
+  ): Promise<PaymentsResponse> {
     if (!ctx.user?.id) {
       throw new GraphQLError('Not authenticated');
     }
 
-    const where = { ...args.where, merchantId: ctx.user.id };
-    const result = await this.service.findAll(where, args.take, args.skip);
-    return result as unknown as PaymentListResponse;
+    const fields = graphqlFields(info);
+
+    const promises: { total?: Promise<number>; payments?: Promise<any[]> } = {};
+
+    query.filter = {
+      AND: [
+        query.filter,
+        {
+          memberId: ctx.user.id,
+        },
+      ].filter(Boolean),
+    };
+
+    if ('total' in fields) {
+      promises.total = this.service.getPaymentsCount(query);
+    }
+
+    if ('payments' in fields) {
+      promises.payments = this.service.getPayments(query);
+    }
+
+    const result = await Promise.all([promises.total, promises.payments]);
+
+    const response: { total?: number; payments?: Payment[] } = {};
+
+    if (promises.total) {
+      response.total = result[0];
+    }
+
+    if (promises.payments) {
+      response.payments = result[1];
+    }
+
+    return response;
   }
 
   // Admin - List all payments
   @Authorized([UserRole.ADMIN])
-  @Query(() => PaymentListResponse)
-  async adminPayments(@Args() args: PaymentQueryArgs): Promise<PaymentListResponse> {
-    const result = await this.service.findAll(args.where, args.take, args.skip);
-    return result as unknown as PaymentListResponse;
+  @Query(() => PaymentsResponse)
+  async adminPayments(
+    @Args() query: PaymentQueryArgs,
+    @Info() info: GraphQLResolveInfo
+  ): Promise<PaymentsResponse> {
+    const fields = graphqlFields(info);
+
+    const promises: { total?: Promise<number>; payments?: Promise<any[]> } = {};
+
+    if ('total' in fields) {
+      promises.total = this.service.getPaymentsCount(query);
+    }
+
+    if ('payments' in fields) {
+      promises.payments = this.service.getPayments(query);
+    }
+
+    const result = await Promise.all([promises.total, promises.payments]);
+
+    const response: { total?: number; payments?: Payment[] } = {};
+
+    if (promises.total) {
+      response.total = result[0];
+    }
+
+    if (promises.payments) {
+      response.payments = result[1];
+    }
+
+    return response;
   }
 
   // Public - Get supported payment methods
@@ -187,12 +268,12 @@ export class PaymentResolver {
   @FieldResolver(() => Merchant, { nullable: true })
   async merchant(@Root() payment: Payment): Promise<Merchant | null> {
     const merchant = await this.merchantService.findById(payment.merchantId);
-    return merchant as unknown as Merchant | null;
+    return merchant as Merchant;
   }
 
   @FieldResolver(() => [PaymentTransaction])
   async transactions(@Root() payment: Payment): Promise<PaymentTransaction[]> {
     const transactions = await this.transactionService.findByPayment(payment.id);
-    return transactions as unknown as PaymentTransaction[];
+    return transactions as PaymentTransaction[];
   }
 }

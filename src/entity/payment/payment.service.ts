@@ -7,7 +7,7 @@ import { AddressType, TXCService } from '@/service/txc';
 import { croToTxc, CurrencyCode, fiatToCrypto, rateToStoredRate } from '@/utils/currency';
 
 import { CoinMarketCapService } from '@/service/coinMarketCap';
-import { CreatePaymentInput, PaymentWhereInput } from './payment.type';
+import { CreatePaymentInput, PaymentQueryArgs } from './payment.type';
 
 type PaymentWithRelations = Payment & {
   merchant?: any;
@@ -129,41 +129,16 @@ export class PaymentService {
     });
   }
 
-  async findAll(
-    where: PaymentWhereInput = {},
-    take = 20,
-    skip = 0
-  ): Promise<{ payments: PaymentWithRelations[]; total: number }> {
-    const prismaWhere: any = {
-      deletedAt: null,
-    };
+  async getPayments(params: PaymentQueryArgs) {
+    return this.prisma.payment.findMany({
+      where: params.where,
+      orderBy: params.orderBy,
+      ...params.parsePage,
+    });
+  }
 
-    if (where.merchantId) prismaWhere.merchantId = where.merchantId;
-    if (where.status) prismaWhere.status = where.status;
-    if (where.network) prismaWhere.network = where.network;
-    if (where.currency) prismaWhere.currency = where.currency;
-    if (where.externalId) prismaWhere.externalId = where.externalId;
-    if (where.customerEmail)
-      prismaWhere.customerEmail = { contains: where.customerEmail, mode: 'insensitive' };
-
-    if (where.fromDate || where.toDate) {
-      prismaWhere.createdAt = {};
-      if (where.fromDate) prismaWhere.createdAt.gte = where.fromDate;
-      if (where.toDate) prismaWhere.createdAt.lte = where.toDate;
-    }
-
-    const [payments, total] = await Promise.all([
-      this.prisma.payment.findMany({
-        where: prismaWhere,
-        take,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: { transactions: true },
-      }),
-      this.prisma.payment.count({ where: prismaWhere }),
-    ]);
-
-    return { payments, total };
+  async getPaymentsCount({ where }: Pick<PaymentQueryArgs, 'where'>) {
+    return this.prisma.payment.count({ where });
   }
 
   async updateStatus(
