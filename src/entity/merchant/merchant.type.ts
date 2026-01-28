@@ -1,10 +1,20 @@
 import { PaymentCurrency, PaymentNetwork, Prisma } from '@/generated/prisma/client';
 import { QueryArgsBase } from '@/graphql/queryArgs';
 import { IsEmail, IsUrl, MinLength } from 'class-validator';
-import { ArgsType, Field, InputType, Int } from 'type-graphql';
+import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { Merchant } from './merchant.entity';
 
 @ArgsType()
 export class MerchantQueryArgs extends QueryArgsBase<Prisma.MerchantWhereInput> {}
+
+@ObjectType()
+export class MerchantsResponse {
+  @Field(() => [Merchant])
+  merchants?: Merchant[];
+
+  @Field(() => Number)
+  total?: number;
+}
 
 @InputType()
 export class MerchantLoginInput {

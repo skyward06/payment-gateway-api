@@ -27,6 +27,7 @@ import {
   CreateMerchantInput,
   MerchantLoginInput,
   MerchantQueryArgs,
+  MerchantsResponse,
   UpdateMerchantInput,
   UpdateMerchantNetworkInput,
 } from './merchant.type';
@@ -42,15 +43,6 @@ class MerchantLoginResponse {
   token!: string;
 }
 
-@ObjectType()
-class MerchantsResponse {
-  @Field(() => [Merchant])
-  merchants?: Merchant[];
-
-  @Field(() => Number)
-  total?: number;
-}
-
 @Service()
 @Resolver(() => Merchant)
 export class MerchantResolver {
@@ -64,7 +56,7 @@ export class MerchantResolver {
       throw new GraphQLError('Email already registered');
     }
     const merchant = await this.service.register(data);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Mutation(() => MerchantLoginResponse)
@@ -73,7 +65,7 @@ export class MerchantResolver {
     if (!result) {
       throw new GraphQLError('Invalid email or password');
     }
-    return result as unknown as MerchantLoginResponse;
+    return result as MerchantLoginResponse;
   }
 
   // Merchant queries (for logged-in merchant)
@@ -87,7 +79,7 @@ export class MerchantResolver {
     if (!merchant) {
       throw new GraphQLError('Merchant not found');
     }
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.MERCHANT])
@@ -100,7 +92,7 @@ export class MerchantResolver {
       throw new GraphQLError('Not authenticated');
     }
     const merchant = await this.service.update(ctx.user.id, data);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.MERCHANT])
@@ -113,7 +105,7 @@ export class MerchantResolver {
       throw new GraphQLError('Not authenticated');
     }
     const network = await this.service.addNetwork(ctx.user.id, data);
-    return network as unknown as MerchantNetwork;
+    return network as MerchantNetwork;
   }
 
   @Authorized([UserRole.MERCHANT])
@@ -122,14 +114,14 @@ export class MerchantResolver {
     @Arg('data') data: UpdateMerchantNetworkInput
   ): Promise<MerchantNetwork> {
     const network = await this.service.updateNetwork(data);
-    return network as unknown as MerchantNetwork;
+    return network as MerchantNetwork;
   }
 
   @Authorized([UserRole.MERCHANT])
   @Mutation(() => MerchantNetwork)
   async removeMerchantNetwork(@Arg('data') data: IDInput): Promise<MerchantNetwork> {
     const network = await this.service.removeNetwork(data.id);
-    return network as unknown as MerchantNetwork;
+    return network as MerchantNetwork;
   }
 
   @Authorized([UserRole.MERCHANT])
@@ -143,10 +135,10 @@ export class MerchantResolver {
 
   // Admin queries
   @Authorized([UserRole.ADMIN])
-  @Query(() => Merchant, { nullable: true })
+  @Query(() => Merchant)
   async merchant(@Arg('data') data: IDInput): Promise<Merchant | null> {
     const merchant = await this.service.findById(data.id, true);
-    return merchant as unknown as Merchant | null;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
@@ -186,35 +178,35 @@ export class MerchantResolver {
   @Mutation(() => Merchant)
   async verifyMerchant(@Arg('data') data: IDInput): Promise<Merchant> {
     const merchant = await this.service.verify(data.id);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Merchant)
   async unverifyMerchant(@Arg('data') data: IDInput): Promise<Merchant> {
     const merchant = await this.service.unverify(data.id);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Merchant)
   async activateMerchant(@Arg('data') data: IDInput): Promise<Merchant> {
     const merchant = await this.service.activate(data.id);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Merchant)
   async deactivateMerchant(@Arg('data') data: IDInput): Promise<Merchant> {
     const merchant = await this.service.deactivate(data.id);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
   @Mutation(() => Merchant)
   async deleteMerchant(@Arg('data') data: IDInput): Promise<Merchant> {
     const merchant = await this.service.delete(data.id);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   @Authorized([UserRole.ADMIN])
@@ -222,13 +214,13 @@ export class MerchantResolver {
   async adminUpdateMerchant(@Arg('data') data: AdminUpdateMerchantInput): Promise<Merchant> {
     const { id, ...updateData } = data;
     const merchant = await this.service.update(id, updateData);
-    return merchant as unknown as Merchant;
+    return merchant as Merchant;
   }
 
   // Field resolvers
   @FieldResolver(() => [MerchantNetwork])
   async supportedNetworks(@Root() merchant: Merchant): Promise<MerchantNetwork[]> {
     const networks = await this.service.getNetworks(merchant.id);
-    return networks as unknown as MerchantNetwork[];
+    return networks as MerchantNetwork[];
   }
 }

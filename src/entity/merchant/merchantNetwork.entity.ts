@@ -21,9 +21,9 @@ export class MerchantNetwork {
   @Field()
   merchantId!: string;
 
-  @Field()
-  createdAt!: Date;
+  @Field({ nullable: true })
+  createdAt?: Date;
 
-  @Field()
-  updatedAt!: Date;
+  @Field({ nullable: true })
+  updatedAt?: Date;
 }
