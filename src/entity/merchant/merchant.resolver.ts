@@ -153,11 +153,11 @@ export class MerchantResolver {
     const promises: { total?: Promise<number>; merchants?: Promise<any[]> } = {};
 
     if ('total' in fields) {
-      promises.total = this.service.getMerchantsCount(query);
+      promises.total = this.service.getCount(query);
     }
 
     if ('merchants' in fields) {
-      promises.merchants = this.service.getMerchants(query);
+      promises.merchants = this.service.findAll(query);
     }
 
     const result = await Promise.all([promises.total, promises.merchants]);

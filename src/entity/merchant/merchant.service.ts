@@ -125,41 +125,6 @@ export class MerchantService {
     });
   }
 
-  async findAll(
-    search?: string,
-    isActive?: boolean,
-    take = 20,
-    skip = 0
-  ): Promise<{ merchants: Merchant[]; total: number }> {
-    const where: any = {
-      deletedAt: null,
-    };
-
-    if (search) {
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    if (isActive !== undefined) {
-      where.isActive = isActive;
-    }
-
-    const [merchants, total] = await Promise.all([
-      this.prisma.merchant.findMany({
-        where,
-        take,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: { supportedNetworks: true },
-      }),
-      this.prisma.merchant.count({ where }),
-    ]);
-
-    return { merchants, total };
-  }
-
   // Merchant Network methods
   async addNetwork(merchantId: string, data: AddMerchantNetworkInput): Promise<MerchantNetwork> {
     return this.prisma.merchantNetwork.create({
@@ -204,7 +169,7 @@ export class MerchantService {
     return webhookSecret;
   }
 
-  async getMerchants(params: MerchantQueryArgs) {
+  async findAll(params: MerchantQueryArgs) {
     return this.prisma.merchant.findMany({
       where: params.where,
       orderBy: params.orderBy,
@@ -212,7 +177,7 @@ export class MerchantService {
     });
   }
 
-  async getMerchantsCount({ where }: Pick<MerchantQueryArgs, 'where'>): Promise<number> {
+  async getCount({ where }: Pick<MerchantQueryArgs, 'where'>): Promise<number> {
     return this.prisma.merchant.count({ where });
   }
 
