@@ -1,5 +1,8 @@
 import { IsEmail, MinLength } from 'class-validator';
-import { ArgsType, Field, ID, InputType, Int } from 'type-graphql';
+import { ArgsType, Field, ID, InputType, Int, ObjectType } from 'type-graphql';
+import { Admin } from './admin.entity';
+import { QueryArgsBase } from '@/graphql/queryArgs';
+import { Prisma } from '@/generated/prisma/client';
 
 @InputType()
 export class AdminLoginInput {
@@ -46,16 +49,13 @@ export class UpdateAdminInput {
 }
 
 @ArgsType()
-export class AdminQueryArgs {
-  @Field({ nullable: true })
-  search?: string;
+export class AdminQueryArgs extends QueryArgsBase<Prisma.AdminWhereInput> {}
 
-  @Field({ nullable: true })
-  isActive?: boolean;
+@ObjectType()
+export class AdminsResponse {
+  @Field(() => [Admin])
+  admins?: Admin[];
 
-  @Field(() => Int, { nullable: true, defaultValue: 20 })
-  take?: number;
-
-  @Field(() => Int, { nullable: true, defaultValue: 0 })
-  skip?: number;
+  @Field(() => Number)
+  total?: number;
 }

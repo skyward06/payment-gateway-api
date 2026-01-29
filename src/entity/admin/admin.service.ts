@@ -5,7 +5,7 @@ import { Service } from 'typedi';
 
 import { PrismaService } from '@/service/prisma';
 
-import { CreateAdminInput, UpdateAdminInput } from './admin.type';
+import { AdminQueryArgs, CreateAdminInput, UpdateAdminInput } from './admin.type';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -13,6 +13,14 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 @Service()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(params: AdminQueryArgs) {
+    return this.prisma.admin.findMany({
+      where: params.where,
+      orderBy: params.orderBy,
+      ...params.parsePage,
+    });
+  }
 
   async findByEmail(email: string): Promise<Admin | null> {
     return this.prisma.admin.findUnique({
@@ -24,6 +32,10 @@ export class AdminService {
     return this.prisma.admin.findUnique({
       where: { id },
     });
+  }
+
+  async getCount({ where }: Pick<AdminQueryArgs, 'where'>) {
+    return this.prisma.admin.count({ where });
   }
 
   async login(email: string, password: string): Promise<{ admin: Admin; token: string } | null> {
@@ -74,35 +86,6 @@ export class AdminService {
 
   async delete(id: string): Promise<Admin> {
     return this.prisma.admin.delete({ where: { id } });
-  }
-
-  async findAll(
-    search?: string,
-    isActive?: boolean,
-    take = 20,
-    skip = 0
-  ): Promise<{ admins: Admin[]; total: number }> {
-    const where: any = {
-      deletedAt: null,
-    };
-
-    if (search) {
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    if (isActive !== undefined) {
-      where.isActive = isActive;
-    }
-
-    const [admins, total] = await Promise.all([
-      this.prisma.admin.findMany({ where, take, skip, orderBy: { createdAt: 'desc' } }),
-      this.prisma.admin.count({ where }),
-    ]);
-
-    return { admins, total };
   }
 
   verifyToken(token: string): { id: string; email: string; role: UserRole } | null {
