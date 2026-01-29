@@ -7,7 +7,8 @@ import { AddressType, TXCService } from '@/service/txc';
 import { croToTxc, CurrencyCode, fiatToCrypto, rateToStoredRate } from '@/utils/currency';
 
 import { CoinMarketCapService } from '@/service/coinMarketCap';
-import { CreatePaymentInput, PaymentQueryArgs } from './payment.type';
+import { CreatePaymentInput, PaymentOverviewResponse, PaymentQueryArgs } from './payment.type';
+import { access } from 'node:fs';
 
 type PaymentWithRelations = Payment & {
   merchant?: any;
@@ -139,6 +140,34 @@ export class PaymentService {
 
   async getCount({ where }: Pick<PaymentQueryArgs, 'where'>) {
     return this.prisma.payment.count({ where });
+  }
+
+  async overview({ where }: Pick<PaymentQueryArgs, 'where'>) {
+    const overview = await this.prisma.payment.groupBy({
+      where,
+      by: ['status'],
+      _count: true,
+    });
+
+    const overviewMap: Record<PaymentStatus, PaymentOverviewResponse> = Object.values(
+      PaymentStatus
+    ).reduce(
+      (acc, status) => {
+        acc[status] = { status, count: 0 };
+
+        return acc;
+      },
+      {} as Record<PaymentStatus, PaymentOverviewResponse>
+    );
+
+    overview.forEach((item) => {
+      overviewMap[item.status] = {
+        status: item.status,
+        count: item._count,
+      };
+    });
+
+    return Object.values(overviewMap);
   }
 
   async updateStatus(

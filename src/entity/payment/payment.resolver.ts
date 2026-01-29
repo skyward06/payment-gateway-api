@@ -1,4 +1,4 @@
-import { PaymentCurrency, UserRole } from '@/generated/prisma/client';
+import { PaymentCurrency, PaymentStatus, UserRole } from '@/generated/prisma/client';
 import { GraphQLError, GraphQLResolveInfo } from 'graphql';
 import {
   Arg,
@@ -26,7 +26,12 @@ import { PaymentTransactionService } from '../paymentTransaction/paymentTransact
 import { CoinMarketCapService } from '@/service/coinMarketCap';
 import { AllExchangeRates, Payment, PaymentMethodInfo, TokenPriceInfo } from './payment.entity';
 import { PaymentService } from './payment.service';
-import { CreatePaymentInput, PaymentQueryArgs, PaymentsResponse } from './payment.type';
+import {
+  CreatePaymentInput,
+  PaymentOverviewResponse,
+  PaymentQueryArgs,
+  PaymentsResponse,
+} from './payment.type';
 import graphqlFields from 'graphql-fields';
 
 @Service()
@@ -135,6 +140,14 @@ export class PaymentResolver {
 
     const payment = await this.service.cancel(data.id, key.merchantId);
     return payment as unknown as Payment;
+  }
+
+  @Authorized([UserRole.MERCHANT])
+  @Query(() => [PaymentOverviewResponse])
+  async paymentOverview(@Ctx() ctx: Context): Promise<PaymentOverviewResponse[]> {
+    const overview = await this.service.overview({ where: { merchantId: ctx.user?.id } });
+
+    return overview;
   }
 
   // Merchant authenticated - List own payments

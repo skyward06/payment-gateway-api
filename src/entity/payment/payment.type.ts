@@ -89,6 +89,12 @@ export class PaymentWhereInput {
   toDate?: Date;
 }
 
+@InputType()
+export class CheckPaymentInput {
+  @Field()
+  paymentId!: string;
+}
+
 @ArgsType()
 export class PaymentQueryArgs extends QueryArgsBase<Prisma.PaymentWhereInput> {}
 
@@ -101,8 +107,11 @@ export class PaymentsResponse {
   total?: number;
 }
 
-@InputType()
-export class CheckPaymentInput {
-  @Field()
-  paymentId!: string;
+@ObjectType()
+export class PaymentOverviewResponse {
+  @Field(() => PaymentStatus)
+  status!: PaymentStatus;
+
+  @Field(() => Number)
+  count!: number;
 }
