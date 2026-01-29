@@ -103,11 +103,11 @@ export class PaymentResolver {
     };
 
     if ('total' in fields) {
-      promises.total = this.service.getPaymentsCount(query);
+      promises.total = this.service.getCount(query);
     }
 
     if ('payments' in fields) {
-      promises.payments = this.service.getPayments(query);
+      promises.payments = this.service.findAll(query);
     }
 
     const result = await Promise.all([promises.total, promises.payments]);
@@ -163,11 +163,11 @@ export class PaymentResolver {
     };
 
     if ('total' in fields) {
-      promises.total = this.service.getPaymentsCount(query);
+      promises.total = this.service.getCount(query);
     }
 
     if ('payments' in fields) {
-      promises.payments = this.service.getPayments(query);
+      promises.payments = this.service.findAll(query);
     }
 
     const result = await Promise.all([promises.total, promises.payments]);
@@ -197,11 +197,11 @@ export class PaymentResolver {
     const promises: { total?: Promise<number>; payments?: Promise<any[]> } = {};
 
     if ('total' in fields) {
-      promises.total = this.service.getPaymentsCount(query);
+      promises.total = this.service.getCount(query);
     }
 
     if ('payments' in fields) {
-      promises.payments = this.service.getPayments(query);
+      promises.payments = this.service.findAll(query);
     }
 
     const result = await Promise.all([promises.total, promises.payments]);

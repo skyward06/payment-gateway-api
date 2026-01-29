@@ -129,7 +129,7 @@ export class PaymentService {
     });
   }
 
-  async getPayments(params: PaymentQueryArgs) {
+  async findAll(params: PaymentQueryArgs) {
     return this.prisma.payment.findMany({
       where: params.where,
       orderBy: params.orderBy,
@@ -137,7 +137,7 @@ export class PaymentService {
     });
   }
 
-  async getPaymentsCount({ where }: Pick<PaymentQueryArgs, 'where'>) {
+  async getCount({ where }: Pick<PaymentQueryArgs, 'where'>) {
     return this.prisma.payment.count({ where });
   }
 
