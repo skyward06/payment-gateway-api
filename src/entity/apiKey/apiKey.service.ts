@@ -5,7 +5,7 @@ import { Service } from 'typedi';
 
 import { PrismaService } from '@/service/prisma';
 
-import { CreateApiKeyInput, UpdateApiKeyInput } from './apiKey.type';
+import { ApiKeyQueryArgs, CreateApiKeyInput, UpdateApiKeyInput } from './apiKey.type';
 
 @Service()
 export class ApiKeyService {
@@ -44,6 +44,10 @@ export class ApiKeyService {
     });
 
     return { apiKey, secretKey };
+  }
+
+  async getCount({ where }: Pick<ApiKeyQueryArgs, 'where'>) {
+    return this.prisma.apiKey.count({ where });
   }
 
   async findById(id: string): Promise<ApiKey | null> {
@@ -128,27 +132,12 @@ export class ApiKeyService {
     });
   }
 
-  async findByMerchant(
-    merchantId: string,
-    isActive?: boolean,
-    take = 20,
-    skip = 0
-  ): Promise<{ apiKeys: ApiKey[]; total: number }> {
-    const where: any = {
-      merchantId,
-      deletedAt: null,
-    };
-
-    if (isActive !== undefined) {
-      where.isActive = isActive;
-    }
-
-    const [apiKeys, total] = await Promise.all([
-      this.prisma.apiKey.findMany({ where, take, skip, orderBy: { createdAt: 'desc' } }),
-      this.prisma.apiKey.count({ where }),
-    ]);
-
-    return { apiKeys, total };
+  async findByMerchant(params: ApiKeyQueryArgs) {
+    return this.prisma.apiKey.findMany({
+      where: params.where,
+      orderBy: params.orderBy,
+      ...params.parsePage,
+    });
   }
 
   async rotateSecret(id: string): Promise<{ apiKey: ApiKey; secretKey: string }> {

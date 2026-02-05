@@ -1,4 +1,19 @@
-import { ArgsType, Field, InputType, Int } from 'type-graphql';
+import { QueryArgsBase } from '@/graphql/queryArgs';
+import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { Prisma } from '@/generated/prisma/client';
+import { ApiKey } from './apiKey.entity';
+
+@ArgsType()
+export class ApiKeyQueryArgs extends QueryArgsBase<Prisma.ApiKeyWhereInput> {}
+
+@ObjectType()
+export class ApiKeyListResponse {
+  @Field(() => [ApiKey])
+  apiKeys?: ApiKey[];
+
+  @Field(() => Number)
+  total?: number;
+}
 
 @InputType()
 export class CreateApiKeyInput {
@@ -46,19 +61,4 @@ export class UpdateApiKeyInput {
 
   @Field({ nullable: true })
   expiresAt?: Date;
-}
-
-@ArgsType()
-export class ApiKeyQueryArgs {
-  @Field({ nullable: true })
-  merchantId?: string;
-
-  @Field({ nullable: true })
-  isActive?: boolean;
-
-  @Field(() => Int, { nullable: true, defaultValue: 20 })
-  take?: number;
-
-  @Field(() => Int, { nullable: true, defaultValue: 0 })
-  skip?: number;
 }
