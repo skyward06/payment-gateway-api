@@ -46,10 +46,10 @@ export class PaymentResolver {
   ) {}
 
   // Public query - Get payment by ID (for payment page)
-  @Query(() => Payment, { nullable: true })
-  async payment(@Arg('data') data: IDInput): Promise<Payment | null> {
+  @Query(() => Payment)
+  async payment(@Arg('data') data: IDInput): Promise<Payment> {
     const payment = await this.service.findById(data.id, true);
-    return payment as unknown as Payment | null;
+    return payment as Payment;
   }
 
   // API Key authenticated - Create payment
@@ -64,22 +64,22 @@ export class PaymentResolver {
     }
 
     const payment = await this.service.create(key.merchantId, data);
-    return payment as unknown as Payment;
+    return payment as Payment;
   }
 
   // API Key authenticated - Get payment by external ID
-  @Query(() => Payment, { nullable: true })
+  @Query(() => Payment)
   async paymentByExternalId(
     @Arg('apiKey') apiKey: string,
     @Arg('externalId') externalId: string
-  ): Promise<Payment | null> {
+  ): Promise<Payment> {
     const key = await this.apiKeyService.validatePublicKeyOnly(apiKey);
     if (!key) {
       throw new GraphQLError('Invalid API key');
     }
 
     const payment = await this.service.findByExternalId(externalId, key.merchantId);
-    return payment as unknown as Payment | null;
+    return payment as Payment;
   }
 
   // API Key authenticated - List payments
@@ -170,7 +170,7 @@ export class PaymentResolver {
       AND: [
         query.filter,
         {
-          memberId: ctx.user.id,
+          merchantId: ctx.user.id,
         },
       ].filter(Boolean),
     };
@@ -247,7 +247,7 @@ export class PaymentResolver {
     }
 
     const methods = await this.service.getSupportedPaymentMethods(merchantId);
-    return methods as unknown as PaymentMethodInfo[];
+    return methods as PaymentMethodInfo[];
   }
 
   // Public - Get token price
@@ -279,7 +279,7 @@ export class PaymentResolver {
 
   // Field resolvers
   @FieldResolver(() => Merchant, { nullable: true })
-  async merchant(@Root() payment: Payment): Promise<Merchant | null> {
+  async merchant(@Root() payment: Payment): Promise<Merchant> {
     const merchant = await this.merchantService.findById(payment.merchantId);
     return merchant as Merchant;
   }
