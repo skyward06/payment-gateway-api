@@ -6,6 +6,16 @@ import path from 'path';
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV?.toLowerCase() ?? 'development',
 
+  APP_PORT: process.env.APP_PORT || 4000,
+  APP_HOST: process.env.APP_HOST || '127.0.0.1',
+
+  DATABASE_URL: process.env.DATABASE_URL!,
+
+  JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+
+  COINMARKETCAP_API_KEY: process.env.COINMARKETCAP_API_KEY,
+
   MEMPOOL: {
     API: process.env.MEMPOOL_API ?? 'https://mempool.texitcoin.org/api',
   },

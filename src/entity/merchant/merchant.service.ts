@@ -1,10 +1,12 @@
-import { Merchant, MerchantNetwork, UserRole } from '@/generated/prisma/client';
+import { Merchant, MerchantNetwork, PaymentNetwork, UserRole } from '@/generated/prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { Service } from 'typedi';
 
+import { ENV } from '@/consts';
 import { PrismaService } from '@/service/prisma';
+import { TXCService } from '@/service/txc';
 
 import {
   AddMerchantNetworkInput,
@@ -14,8 +16,8 @@ import {
   UpdateMerchantNetworkInput,
 } from './merchant.type';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET = ENV.JWT_SECRET;
+const JWT_EXPIRES_IN = ENV.JWT_EXPIRES_IN;
 
 type MerchantWithRelations = Merchant & {
   apiKeys?: any[];
@@ -24,7 +26,10 @@ type MerchantWithRelations = Merchant & {
 
 @Service()
 export class MerchantService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly txcService: TXCService
+  ) {}
 
   async findByEmail(email: string): Promise<Merchant | null> {
     return this.prisma.merchant.findUnique({
@@ -126,7 +131,32 @@ export class MerchantService {
   }
 
   // Merchant Network methods
+  private validateWalletAddress(network: PaymentNetwork, walletAddress: string): void {
+    switch (network) {
+      case PaymentNetwork.TXC:
+        if (!this.txcService.isValidAddress(walletAddress)) {
+          throw new Error(
+            'Invalid TXC wallet address. Address must start with "txc1" (bech32) or "T" (legacy).'
+          );
+        }
+        break;
+      case PaymentNetwork.ETH:
+      case PaymentNetwork.BASE:
+      case PaymentNetwork.BSC:
+      case PaymentNetwork.POLYGON:
+        if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+          throw new Error(
+            'Invalid EVM wallet address. Address must be a valid 0x-prefixed hex address.'
+          );
+        }
+        break;
+      default:
+        throw new Error(`Unsupported network: ${network}`);
+    }
+  }
+
   async addNetwork(merchantId: string, data: AddMerchantNetworkInput): Promise<MerchantNetwork> {
+    this.validateWalletAddress(data.network, data.walletAddress);
     return this.prisma.merchantNetwork.create({
       data: {
         merchantId,
@@ -139,7 +169,17 @@ export class MerchantService {
 
   async updateNetwork(data: UpdateMerchantNetworkInput): Promise<MerchantNetwork> {
     const updateData: any = {};
-    if (data.walletAddress) updateData.walletAddress = data.walletAddress;
+    if (data.walletAddress) {
+      // Look up the existing network to get its type for validation
+      const existing = await this.prisma.merchantNetwork.findUnique({
+        where: { id: data.id },
+      });
+      if (!existing) {
+        throw new Error('Network not found');
+      }
+      this.validateWalletAddress(existing.network, data.walletAddress);
+      updateData.walletAddress = data.walletAddress;
+    }
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
 
     return this.prisma.merchantNetwork.update({
@@ -156,7 +196,7 @@ export class MerchantService {
 
   async getNetworks(merchantId: string): Promise<MerchantNetwork[]> {
     return this.prisma.merchantNetwork.findMany({
-      where: { merchantId, isActive: true },
+      where: { merchantId },
     });
   }
 

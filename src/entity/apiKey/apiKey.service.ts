@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Service } from 'typedi';
 
+import { ENV } from '@/consts';
 import { PrismaService } from '@/service/prisma';
 
 import { ApiKeyQueryArgs, CreateApiKeyInput, UpdateApiKeyInput } from './apiKey.type';
@@ -12,12 +13,12 @@ export class ApiKeyService {
   constructor(private readonly prisma: PrismaService) {}
 
   private generatePublicKey(): string {
-    const prefix = process.env.NODE_ENV === 'production' ? 'pk_live_' : 'pk_test_';
+    const prefix = ENV.NODE_ENV === 'production' ? 'pk_live_' : 'pk_test_';
     return prefix + crypto.randomBytes(24).toString('hex');
   }
 
   private generateSecretKey(): string {
-    const prefix = process.env.NODE_ENV === 'production' ? 'sk_live_' : 'sk_test_';
+    const prefix = ENV.NODE_ENV === 'production' ? 'sk_live_' : 'sk_test_';
     return prefix + crypto.randomBytes(32).toString('hex');
   }
 

@@ -3,12 +3,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Service } from 'typedi';
 
+import { ENV } from '@/consts';
 import { PrismaService } from '@/service/prisma';
 
 import { AdminQueryArgs, CreateAdminInput, UpdateAdminInput } from './admin.type';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET = ENV.JWT_SECRET;
+const JWT_EXPIRES_IN = ENV.JWT_EXPIRES_IN;
 
 @Service()
 export class AdminService {

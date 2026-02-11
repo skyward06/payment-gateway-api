@@ -12,6 +12,7 @@ import * as tq from 'type-graphql';
 import { Container } from 'typedi';
 
 import { authChecker } from './authChecker';
+import { ENV } from './consts';
 import { Context, context } from './context';
 
 // Import resolvers
@@ -23,8 +24,8 @@ import { PaymentResolver } from './entity/payment/payment.resolver';
 // Import enum registrations
 import './graphql/enum';
 
-const APP_PORT = process.env.APP_PORT || 4000;
-const APP_HOST = process.env.APP_HOST || '127.0.0.1';
+const APP_PORT = ENV.APP_PORT;
+const APP_HOST = ENV.APP_HOST;
 
 async function bootstrap() {
   const app = express();

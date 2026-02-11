@@ -1,5 +1,7 @@
 import { verify } from 'jsonwebtoken';
 
+import { ENV } from '@/consts';
+
 export const verifyTokenAuth = (token: string) => {
-  return verify(token, process.env.JWT_SECRET!);
+  return verify(token, ENV.JWT_SECRET);
 };

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { Service } from 'typedi';
 
+import { ENV } from '@/consts';
+
 /**
  * CoinMarketCap Service
  *
@@ -16,7 +18,7 @@ import { Service } from 'typedi';
  * - When converting crypto (cros/wei) to fiat (cents), use cryptoToFiat() from currency.ts
  */
 
-const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY;
+const COINMARKETCAP_API_KEY = ENV.COINMARKETCAP_API_KEY;
 const COINMARKETCAP_API_PREFIX = 'https://pro-api.coinmarketcap.com';
 
 // CoinMarketCap cryptocurrency IDs

@@ -3,7 +3,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Service } from 'typedi';
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+import { ENV } from '@/consts';
+
+const adapter = new PrismaPg({ connectionString: ENV.DATABASE_URL });
 
 @Service()
 export class PrismaService extends PrismaClient<
