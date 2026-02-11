@@ -86,8 +86,8 @@ model Merchant {
   webhookSecret String?
 
   // Settings
-  defaultExpirationMinutes Int     @default(30)
-  autoConfirmations        Int     @default(1) // Required confirmations for auto-complete
+  defaultExpirationMinutes Int @default(30)
+  autoConfirmations        Int @default(1) // Required confirmations for auto-complete
 
   // Status
   isActive   Boolean   @default(true)
@@ -125,7 +125,7 @@ model ApiKey {
   expiresAt  DateTime?
 
   merchantId String
-  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -147,7 +147,7 @@ model MerchantNetwork {
   walletAddress String
 
   merchantId String
-  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -257,7 +257,7 @@ model WebhookLog {
   nextRetryAt DateTime?
 
   merchantId String
-  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   paymentId  String?
   payment    Payment? @relation(fields: [paymentId], references: [id])
 
