@@ -3,6 +3,7 @@ import {
   PaymentNetwork,
   PaymentStatus,
   UserRole,
+  WithdrawalStatus,
 } from '@/generated/prisma/client';
 import { registerEnumType } from 'type-graphql';
 
@@ -11,5 +12,4 @@ registerEnumType(UserRole, { name: 'UserRole' });
 registerEnumType(PaymentStatus, { name: 'PaymentStatus' });
 registerEnumType(PaymentNetwork, { name: 'PaymentNetwork' });
 registerEnumType(PaymentCurrency, { name: 'PaymentCurrency' });
-
-// Note: GraphQLBigInt from graphql-scalars is automatically registered when used in Field decorators
+registerEnumType(WithdrawalStatus, { name: 'WithdrawalStatus' });

@@ -1,4 +1,4 @@
-import { PaymentNetwork, PaymentTransaction, Prisma } from '@prisma/client';
+import { PaymentNetwork, PaymentTransaction, Prisma } from '@/generated/prisma/client';
 import { Service } from 'typedi';
 
 import { PrismaService } from '@/service/prisma';

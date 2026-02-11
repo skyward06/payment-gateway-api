@@ -1,4 +1,5 @@
 import { PaymentCurrency, PaymentNetwork, Prisma } from '@/generated/prisma/client';
+import { IsValidWalletAddress } from '@/graphql/decorator';
 import { QueryArgsBase } from '@/graphql/queryArgs';
 import { IsEmail, IsUrl, MinLength } from 'class-validator';
 import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
@@ -112,6 +113,7 @@ export class AddMerchantNetworkInput {
   currency!: PaymentCurrency;
 
   @Field()
+  @IsValidWalletAddress()
   walletAddress!: string;
 }
 
@@ -120,7 +122,11 @@ export class UpdateMerchantNetworkInput {
   @Field()
   id!: string;
 
+  @Field(() => PaymentNetwork, { nullable: true })
+  network?: PaymentNetwork;
+
   @Field({ nullable: true })
+  @IsValidWalletAddress()
   walletAddress?: string;
 
   @Field({ nullable: true })

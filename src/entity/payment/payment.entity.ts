@@ -73,6 +73,12 @@ export class Payment extends BaseEntity {
   cancelUrl?: string;
 
   @Field()
+  isWithdrawn!: boolean;
+
+  @Field({ nullable: true })
+  withdrawnAt?: Date;
+
+  @Field()
   merchantId!: string;
 
   @Field(() => Merchant, { nullable: true })

@@ -19,6 +19,7 @@ import { Service } from 'typedi';
 import { Context } from '@/context';
 import { IDInput } from '@/graphql/common.type';
 
+import graphqlFields from 'graphql-fields';
 import { Merchant } from './merchant.entity';
 import { MerchantService } from './merchant.service';
 import {
@@ -32,7 +33,6 @@ import {
   UpdateMerchantNetworkInput,
 } from './merchant.type';
 import { MerchantNetwork } from './merchantNetwork.entity';
-import graphqlFields from 'graphql-fields';
 
 @ObjectType()
 class MerchantLoginResponse {

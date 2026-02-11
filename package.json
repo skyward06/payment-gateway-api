@@ -28,7 +28,9 @@
     "delete": "NODE_ENV=${NODE_ENV:-development} pm2 delete ecosystem.config.js",
     "delete:dev": "NODE_ENV=development pm2 delete ecosystem.config.js",
     "delete:staging": "NODE_ENV=staging pm2 delete ecosystem.config.js",
-    "delete:prod": "NODE_ENV=production pm2 delete ecosystem.config.js"
+    "delete:prod": "NODE_ENV=production pm2 delete ecosystem.config.js",
+    "sweep": "ts-node -r tsconfig-paths/register src/scripts/withdrawalSweep.ts",
+    "monitor": "ts-node -r tsconfig-paths/register src/scripts/paymentMonitor.ts"
   },
   "author": "",
   "license": "ISC",

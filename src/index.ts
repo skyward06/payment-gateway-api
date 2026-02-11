@@ -7,6 +7,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
+import { GraphQLError, type GraphQLFormattedError } from 'graphql';
 import { createServer } from 'http';
 import * as tq from 'type-graphql';
 import { Container } from 'typedi';
@@ -20,6 +21,7 @@ import { AdminResolver } from './entity/admin/admin.resolver';
 import { ApiKeyResolver } from './entity/apiKey/apiKey.resolver';
 import { MerchantResolver } from './entity/merchant/merchant.resolver';
 import { PaymentResolver } from './entity/payment/payment.resolver';
+import { WithdrawalResolver } from './entity/withdrawal/withdrawal.resolver';
 
 // Import enum registrations
 import './graphql/enum';
@@ -33,7 +35,7 @@ async function bootstrap() {
 
   // Build GraphQL schema
   const schema = await tq.buildSchema({
-    resolvers: [AdminResolver, MerchantResolver, ApiKeyResolver, PaymentResolver],
+    resolvers: [AdminResolver, MerchantResolver, ApiKeyResolver, PaymentResolver, WithdrawalResolver],
     container: Container,
     authChecker,
     validate: { forbidUnknownValues: false },
@@ -44,6 +46,36 @@ async function bootstrap() {
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     introspection: true,
+    formatError: (formattedError, error): GraphQLFormattedError => {
+      const validationErrors = formattedError.extensions?.validationErrors as any[] | undefined;
+
+      if (
+        formattedError.extensions?.code === 'BAD_USER_INPUT' &&
+        Array.isArray(validationErrors) &&
+        validationErrors.length > 0
+      ) {
+        const fieldErrors: Record<string, string> = {};
+        const messages: string[] = [];
+
+        for (const ve of validationErrors) {
+          if (ve.constraints) {
+            const msg = Object.values(ve.constraints)[0] as string;
+            if (ve.property) fieldErrors[ve.property] = msg;
+            messages.push(msg);
+          }
+        }
+
+        return {
+          message: messages.join('; ') || 'Validation failed',
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            fieldErrors,
+          },
+        };
+      }
+
+      return formattedError;
+    },
   });
 
   await server.start();

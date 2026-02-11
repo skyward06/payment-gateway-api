@@ -5,9 +5,12 @@ import { Service } from 'typedi';
 
 import { TXC_EXPLORER } from '@/consts';
 import { TexitcoinNetwork } from '@/consts/texitcoin';
-import { MempoolService } from './mempool';
+import { MempoolService, MempoolUtxo } from './mempool';
 
 const ECPair = ECPairFactory(ecc);
+
+// Initialize the ECC library for bitcoinjs-lib
+bitcoin.initEccLib(ecc);
 
 export enum AddressType {
   P2PKH = 0,
@@ -18,6 +21,14 @@ export interface TransactionOutput {
   address?: string;
   script?: Uint8Array;
   amount: bigint;
+}
+
+export interface SweepResult {
+  txHex: string;
+  txHash: string;
+  totalInput: bigint;
+  fee: bigint;
+  amountSent: bigint;
 }
 
 @Service()
@@ -111,6 +122,23 @@ export class TXCService {
     return BigInt(Math.ceil((spendSize * dustRelayFee) / 1000));
   }
 
+    getOutputScriptSize(output: TransactionOutput): number {
+    if (output.script) {
+      return output.script.length;
+    }
+
+    if (output.address) {
+      const addressType = this.getAddressType(output.address);
+      if (addressType === AddressType.BECH32) {
+        return 22; // P2WPKH script size
+      } else {
+        return 25; // P2PKH script size
+      }
+    }
+
+    throw new Error('Output must have address or script');
+  }
+
   // Get balance for an address using Mempool API
   async getAddressBalance(address: string): Promise<{
     confirmed: number;
@@ -153,5 +181,113 @@ export class TXCService {
   // Broadcast a signed transaction
   async broadcastTransaction(txHex: string): Promise<string> {
     return this.mempoolService.broadcastTransaction(txHex);
+  }
+
+  /**
+   * Build and sign a sweep transaction that sends ALL UTXOs from an address
+   * to a single destination, minus the transaction fee. No change output.
+   *
+   * @param senderPrivKey - WIF-encoded private key of the source address
+   * @param addressType - Address type of the source (BECH32 or P2PKH)
+   * @param toAddress - Destination address (merchant wallet)
+   * @param feeRate - Fee rate in sat/KB (if not provided, defaults to 1000)
+   * @returns SweepResult with transaction hex, hash, amounts
+   */
+  async makeSweepTransaction({
+    senderPrivKey,
+    addressType,
+    toAddress,
+    feeRate = 10,
+  }: {
+    senderPrivKey: string;
+    addressType: AddressType;
+    toAddress: string;
+    feeRate?: number;
+  }): Promise<SweepResult> {
+    const sender = ECPair.fromWIF(senderPrivKey, TexitcoinNetwork);
+    const senderAddress = this.getAddressFromPrivKey(senderPrivKey, addressType);
+
+    if (!senderAddress) {
+      throw new Error('Invalid sender address');
+    }
+
+    const utxos = await this.mempoolService.getAddressUtxos(senderAddress);
+
+    if (utxos.length === 0) {
+      throw new Error('No UTXOs available for sweep');
+    }
+
+    // Calculate total input amount
+    const totalInput = utxos.reduce((sum, utxo) => sum + BigInt(utxo.value), 0n);
+
+    // Determine output script size based on destination address type
+    const toAddressType = this.getAddressType(toAddress);
+    const outputScriptSize = toAddressType === AddressType.BECH32 ? 22 : 25;
+
+    // Calculate transaction size (all inputs, single output, no change)
+    let overhead = 10;
+    let inputSize: number;
+    if (addressType === AddressType.BECH32) {
+      inputSize = 68;
+      overhead += 2;
+    } else {
+      inputSize = 148;
+    }
+    const outputSize = 8 + 1 + outputScriptSize;
+    const estimatedVSize = overhead + utxos.length * inputSize + outputSize;
+
+    // Calculate fee using CFeeRate logic: nSatoshisPerK * nSize / 1000
+    const fee = BigInt(Math.ceil(((feeRate * estimatedVSize) / 1000) * 1000));
+
+    const amountSent = totalInput - fee;
+
+    // Check if sweep is viable (above dust threshold)
+    const dustThreshold = this.getDustThreshold(
+      toAddressType === AddressType.BECH32 ? AddressType.BECH32 : AddressType.P2PKH
+    );
+
+    if (amountSent <= dustThreshold) {
+      throw new Error(
+        `Sweep amount (${amountSent} cros) is below dust threshold (${dustThreshold} cros) after fees`
+      );
+    }
+
+    // Build the transaction
+    const psbt = new bitcoin.Psbt({ network: TexitcoinNetwork });
+
+    // Get raw transactions for inputs
+    const rawTxs = await Promise.all(
+      utxos.map((utxo) => this.mempoolService.getTransactionHex(utxo.txid))
+    );
+
+    // Add all UTXOs as inputs
+    rawTxs.forEach((hex, index) => {
+      const input: any = {
+        hash: utxos[index].txid,
+        index: utxos[index].vout,
+        nonWitnessUtxo: Buffer.from(hex, 'hex'),
+      };
+      psbt.addInput(input);
+    });
+
+    // Add single output to destination
+    psbt.addOutput({
+      address: toAddress,
+      value: amountSent,
+    });
+
+    // Sign all inputs
+    psbt.signAllInputs(sender);
+    psbt.finalizeAllInputs();
+
+    const tx = psbt.extractTransaction();
+
+    return {
+      txHex: tx.toHex(),
+      txHash: tx.getId(),
+      totalInput,
+      fee,
+      amountSent,
+    };
   }
 }

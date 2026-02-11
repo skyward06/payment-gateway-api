@@ -211,6 +211,18 @@ export class PaymentService {
     return this.updateStatus(id, PaymentStatus.CANCELLED);
   }
 
+  async publicCancel(id: string): Promise<Payment> {
+    const payment = await this.findById(id);
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+    if (payment.status !== PaymentStatus.PENDING) {
+      throw new Error('Only pending payments can be cancelled');
+    }
+
+    return this.updateStatus(id, PaymentStatus.CANCELLED);
+  }
+
   async expirePendingPayments(): Promise<number> {
     const result = await this.prisma.payment.updateMany({
       where: {

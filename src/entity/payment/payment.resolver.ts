@@ -142,6 +142,13 @@ export class PaymentResolver {
     return payment as unknown as Payment;
   }
 
+  // Public - Cancel a pending payment
+  @Mutation(() => Payment)
+  async publicCancelPayment(@Arg('data') data: IDInput): Promise<Payment> {
+    const payment = await this.service.publicCancel(data.id);
+    return payment as Payment;
+  }
+
   @Authorized([UserRole.MERCHANT])
   @Query(() => [PaymentOverviewResponse])
   async paymentOverview(@Ctx() ctx: Context): Promise<PaymentOverviewResponse[]> {

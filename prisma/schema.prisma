@@ -36,8 +36,15 @@ enum PaymentStatus {
   OVERPAID // Paid more than required
   COMPLETED // Fully paid and confirmed
   EXPIRED // Payment window expired
-  REFUNDED // Payment was refunded
   CANCELLED // Cancelled by merchant or user
+}
+
+enum WithdrawalStatus {
+  PENDING // Withdrawal queued
+  PROCESSING // Transaction being built/signed
+  BROADCAST // Transaction broadcast to network
+  CONFIRMED // Transaction confirmed on-chain
+  FAILED // Transaction failed
 }
 
 enum PaymentNetwork {
@@ -102,6 +109,7 @@ model Merchant {
   payments          Payment[]
   supportedNetworks MerchantNetwork[]
   webhookLogs       WebhookLog[]
+  withdrawals       Withdrawal[]
 
   @@map("merchants")
 }
@@ -202,15 +210,21 @@ model Payment {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  // Withdrawal tracking
+  isWithdrawn Boolean @default(false)
+  withdrawnAt DateTime?
+
   // Relations
   transactions PaymentTransaction[]
   webhookLogs  WebhookLog[]
+  withdrawals  Withdrawal[]
 
   @@index([externalId])
   @@index([paymentAddress])
   @@index([status])
   @@index([merchantId, status])
   @@index([expiresAt])
+  @@index([merchantId, isWithdrawn])
   @@map("payments")
 }
 
@@ -267,4 +281,54 @@ model WebhookLog {
   @@index([merchantId, isDelivered])
   @@index([nextRetryAt])
   @@map("webhook_logs")
+}
+
+// Withdrawal - tracks fund sweeps from payment addresses to merchant wallets
+// All amounts use SMALLEST UNITS (see convention at top of file)
+model Withdrawal {
+  id String @id @default(uuid())
+
+  // Source
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id])
+
+  // Destination
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  // Addresses
+  fromAddress String // Payment address (source)
+  toAddress   String // Merchant wallet address (destination)
+
+  // Amount details
+  amount BigInt // Amount swept in smallest unit (cros)
+  fee    BigInt // Transaction fee in smallest unit (cros)
+
+  // Network
+  network  PaymentNetwork
+  currency PaymentCurrency
+
+  // Transaction
+  txHash String? // Blockchain transaction hash
+  status WithdrawalStatus @default(PENDING)
+
+  // Error tracking
+  errorMessage String?
+  attempts     Int     @default(0)
+
+  // Trigger
+  isManual Boolean @default(false) // true if triggered by merchant, false if auto-sweep
+
+  // Timing
+  broadcastAt DateTime?
+  confirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([merchantId])
+  @@index([paymentId])
+  @@index([status])
+  @@index([txHash])
+  @@map("withdrawals")
 }
