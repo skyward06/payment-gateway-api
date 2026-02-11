@@ -88,8 +88,6 @@ model Merchant {
   // Settings
   defaultExpirationMinutes Int     @default(30)
   autoConfirmations        Int     @default(1) // Required confirmations for auto-complete
-  allowPartialPayments     Boolean @default(false)
-  collectCustomerEmail     Boolean @default(false)
 
   // Status
   isActive   Boolean   @default(true)

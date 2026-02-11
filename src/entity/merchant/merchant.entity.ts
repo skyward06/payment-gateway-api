@@ -42,12 +42,6 @@ export class Merchant extends BaseEntity {
   autoConfirmations!: number;
 
   @Field()
-  allowPartialPayments!: boolean;
-
-  @Field()
-  collectCustomerEmail!: boolean;
-
-  @Field()
   isActive!: boolean;
 
   @Field({ nullable: true })

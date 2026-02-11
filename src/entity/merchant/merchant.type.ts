@@ -72,12 +72,6 @@ export class UpdateMerchantInput {
 
   @Field(() => Int, { nullable: true })
   autoConfirmations?: number;
-
-  @Field({ nullable: true })
-  allowPartialPayments?: boolean;
-
-  @Field({ nullable: true })
-  collectCustomerEmail?: boolean;
 }
 
 @InputType()
@@ -107,12 +101,6 @@ export class AdminUpdateMerchantInput {
 
   @Field(() => Int, { nullable: true })
   autoConfirmations?: number;
-
-  @Field({ nullable: true })
-  allowPartialPayments?: boolean;
-
-  @Field({ nullable: true })
-  collectCustomerEmail?: boolean;
 }
 
 @InputType()
